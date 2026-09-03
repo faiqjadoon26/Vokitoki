@@ -2,217 +2,651 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>VokiToki – Host/Join</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VokiToki</title>
     <style>
-        * { box-sizing: border-box; margin: 0; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
         body {
-            font-family: system-ui, sans-serif;
-            background: #0b0e14;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #1a1a1a;
             color: #e8edf5;
-            max-width: 500px;
-            margin: 2rem auto;
-            padding: 1.5rem;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(ellipse at center, #2a2a2a 0%, #0a0a0a 100%);
+            padding: 16px;
         }
-        .card {
-            background: #1a1f2a;
-            border-radius: 1.5rem;
-            padding: 1.5rem;
-            border: 1px solid #2e3748;
-            margin-bottom: 1.2rem;
+
+        .radio {
+            max-width: 420px;
+            width: 100%;
+            background: linear-gradient(145deg, #2d2d2d, #1a1a1a);
+            border-radius: 40px 40px 32px 32px;
+            padding: 24px 20px 28px;
+            box-shadow: 
+                0 20px 60px rgba(0,0,0,0.8),
+                inset 0 1px 0 rgba(255,255,255,0.05),
+                0 0 0 2px #3a3a3a;
+            border: 1px solid #4a4a4a;
+            position: relative;
         }
-        h1 { font-size: 1.8rem; margin-bottom: 0.2rem; }
-        .sub { color: #8892a8; margin-bottom: 1.5rem; font-size: 0.9rem; }
-        .row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; margin: 0.5rem 0; }
-        input {
-            flex: 1;
-            padding: 0.6rem 1rem;
-            border-radius: 2rem;
-            border: 1px solid #2e3748;
-            background: #0f141e;
-            color: #e8edf5;
-            font-size: 1rem;
-            min-width: 120px;
-            outline: none;
+
+        /* Antenna */
+        .radio::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 50px;
+            background: linear-gradient(to top, #4a4a4a, #6a6a6a);
+            border-radius: 4px 4px 0 0;
+            box-shadow: 0 -4px 10px rgba(100,100,100,0.3);
         }
-        input:focus { border-color: #3b82f6; }
-        button {
-            padding: 0.6rem 1.2rem;
-            border: none;
-            border-radius: 2rem;
-            font-weight: 600;
-            background: #2a3348;
-            color: #c8d0e0;
-            cursor: pointer;
-            border: 1px solid #3a445a;
-            transition: 0.15s;
+        
+        .radio::after {
+            content: '';
+            position: absolute;
+            top: -56px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 14px;
+            height: 10px;
+            background: radial-gradient(ellipse, #6a6a6a, #3a3a3a);
+            border-radius: 50%;
+            box-shadow: 0 -2px 8px rgba(100,100,100,0.2);
         }
-        button:active { transform: scale(0.96); }
-        button.primary { background: #2563eb; color: #fff; border-color: #3b82f6; }
-        button.danger { background: #7f1d1d; border-color: #b91c1c; color: #fca5a5; }
-        button.success { background: #059669; color: #fff; border-color: #10b981; }
-        button.warning { background: #d97706; color: #fff; border-color: #f59e0b; }
-        button:disabled { opacity: 0.4; pointer-events: none; }
-        .badge {
-            display: inline-block;
-            padding: 0.2rem 0.8rem;
-            border-radius: 1rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            background: #1e2a3a;
-            color: #94a3b8;
+
+        /* Top LED indicators */
+        .leds {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 16px;
         }
-        .badge.on { background: #1e3a3a; color: #34d399; }
-        .badge.host { background: #7f1d1d; color: #fca5a5; }
-        .badge.recording { background: #7f1d1d; color: #fca5a5; animation: pulse 1s infinite; }
-        @keyframes pulse {
+        
+        .led {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            transition: 0.3s;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .led.power {
+            background: #22c55e;
+            box-shadow: 0 0 12px rgba(34,197,94,0.3), inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .led.tx {
+            background: #ef4444;
+            box-shadow: 0 0 12px rgba(239,68,68,0.3), inset 0 2px 4px rgba(0,0,0,0.3);
+            animation: blink 0.5s infinite;
+        }
+        
+        .led.rx {
+            background: #3b82f6;
+            box-shadow: 0 0 12px rgba(59,130,246,0.3), inset 0 2px 4px rgba(0,0,0,0.3);
+            animation: blink 0.5s infinite;
+        }
+
+        @keyframes blink {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            50% { opacity: 0.3; }
         }
-        #log {
-            background: #0f141e;
-            padding: 0.8rem;
-            border-radius: 1rem;
-            max-height: 200px;
-            overflow-y: auto;
-            font-family: monospace;
-            font-size: 0.85rem;
-            white-space: pre-wrap;
-            word-break: break-word;
-            border: 1px solid #1e2638;
-            margin-top: 0.5rem;
-        }
-        hr { border: 0; border-top: 1px solid #1e2638; margin: 0.8rem 0; }
-        .voice-indicator {
+
+        /* Speaker grille */
+        .speaker {
+            background: radial-gradient(ellipse at center, #1a1a1a, #0a0a0a);
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid #3a3a3a;
+            box-shadow: inset 0 4px 12px rgba(0,0,0,0.6);
+            min-height: 60px;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            margin: 0.5rem 0;
+            justify-content: center;
         }
-        .voice-indicator .bar {
-            flex: 1;
-            height: 4px;
-            background: #1e2638;
+        
+        .speaker-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 4px;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .speaker-grid span {
+            height: 8px;
+            background: #2a2a2a;
             border-radius: 2px;
-            overflow: hidden;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
         }
-        .voice-indicator .bar .fill {
-            height: 100%;
-            background: #22c55e;
-            width: 0%;
-            transition: width 0.1s;
+        
+        .speaker-grid span:nth-child(odd) {
+            background: #222;
         }
-        .user-list {
+
+        /* Channel display */
+        .display {
+            background: #0a0a0a;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            border: 1px solid #2a2a2a;
+            box-shadow: inset 0 4px 12px rgba(0,0,0,0.8);
+            font-family: 'Courier New', monospace;
+            min-height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .display .channel {
+            color: #4ade80;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(74,222,128,0.1);
+        }
+        
+        .display .status {
+            color: #94a3b8;
+            font-size: 12px;
+            margin-top: 4px;
+            letter-spacing: 1px;
+        }
+        
+        .display .status.connected {
+            color: #4ade80;
+        }
+        
+        .display .status.recording {
+            color: #ef4444;
+            animation: pulse-text 0.5s infinite;
+        }
+
+        @keyframes pulse-text {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        
+        .controls button {
+            flex: 1;
+            padding: 10px 8px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.2s;
+            background: #2a2a2a;
+            color: #94a3b8;
+            border: 1px solid #3a3a3a;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        .controls button:active {
+            transform: scale(0.95);
+        }
+        
+        .controls button.primary {
+            background: #2563eb;
+            color: #fff;
+            border-color: #3b82f6;
+        }
+        
+        .controls button.success {
+            background: #059669;
+            color: #fff;
+            border-color: #10b981;
+        }
+        
+        .controls button.danger {
+            background: #7f1d1d;
+            color: #fca5a5;
+            border-color: #b91c1c;
+        }
+        
+        .controls button.host {
+            background: #d97706;
+            color: #fff;
+            border-color: #f59e0b;
+        }
+        
+        .controls button:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        /* PTT Button */
+        .ptt-container {
+            margin-bottom: 16px;
+        }
+        
+        .ptt-btn {
+            width: 100%;
+            padding: 20px;
+            border: none;
+            border-radius: 60px;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.15s;
+            background: linear-gradient(180deg, #2a2a2a, #1a1a1a);
+            color: #94a3b8;
+            border: 2px solid #3a3a3a;
+            box-shadow: 
+                0 8px 24px rgba(0,0,0,0.4),
+                inset 0 2px 0 rgba(255,255,255,0.05);
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        .ptt-btn:active {
+            transform: scale(0.97);
+        }
+        
+        .ptt-btn.active {
+            background: linear-gradient(180deg, #7f1d1d, #4a0a0a);
+            border-color: #ef4444;
+            color: #fca5a5;
+            box-shadow: 
+                0 8px 24px rgba(239,68,68,0.2),
+                inset 0 2px 0 rgba(255,255,255,0.1);
+        }
+        
+        .ptt-btn.active .ptt-icon {
+            animation: pulse-ptt 0.3s infinite;
+        }
+        
+        .ptt-btn .ptt-icon {
+            font-size: 28px;
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        @keyframes pulse-ptt {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Volume knob */
+        .knobs {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        
+        .knob-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .knob-group label {
+            font-size: 10px;
+            color: #4a5568;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        .knob {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 40% 35%, #4a4a4a, #1a1a1a);
+            border: 2px solid #3a3a3a;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.3);
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .knob::after {
+            content: '';
+            width: 4px;
+            height: 14px;
+            background: #6a6a6a;
+            border-radius: 2px;
+            position: absolute;
+            top: 4px;
+            box-shadow: 0 0 4px rgba(0,0,0,0.3);
+        }
+        
+        .knob input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 40px;
+            height: 40px;
+            background: transparent;
+            position: absolute;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .knob input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: transparent;
+            border: none;
+        }
+
+        /* User list */
+        .users {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.3rem;
-            margin: 0.5rem 0;
+            gap: 6px;
+            padding: 8px 0;
+            min-height: 32px;
+            align-items: center;
         }
+        
         .user-tag {
             background: #1e2a3a;
-            padding: 0.2rem 0.6rem;
-            border-radius: 1rem;
-            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
             color: #94a3b8;
             border: 1px solid #2a3348;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
-        .user-tag.active { border-color: #22c55e; color: #86efac; }
-        .user-tag.host { background: #7f1d1d; border-color: #ef4444; color: #fca5a5; }
-        .user-tag.you { background: #1e3a3a; border-color: #22c55e; color: #86efac; }
-        .mode-selector {
-            display: flex;
-            gap: 0.5rem;
-            margin: 0.5rem 0;
+        
+        .user-tag.host {
+            background: #7f1d1d;
+            border-color: #ef4444;
+            color: #fca5a5;
         }
-        .mode-selector button {
-            flex: 1;
-            padding: 0.8rem;
-            border-radius: 1rem;
-            border: 2px solid #2a3348;
-            background: transparent;
-            color: #8892a8;
-            font-weight: 600;
+        
+        .user-tag.you {
+            background: #1e3a3a;
+            border-color: #22c55e;
+            color: #86efac;
         }
-        .mode-selector button.active {
-            border-color: #2563eb;
+        
+        .user-tag .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .user-tag .dot.online {
+            background: #22c55e;
+        }
+
+        /* Messages */
+        .messages {
+            background: #0a0a0a;
+            border-radius: 12px;
+            padding: 12px 14px;
+            max-height: 150px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            border: 1px solid #1a1a1a;
+            margin-top: 8px;
+            scroll-behavior: smooth;
+        }
+        
+        .messages .msg {
+            color: #94a3b8;
+            padding: 2px 0;
+            border-bottom: 1px solid #111;
+        }
+        
+        .messages .msg .time {
+            color: #4a5568;
+            margin-right: 8px;
+        }
+        
+        .messages .msg .sender {
             color: #60a5fa;
-            background: #1a2a4a;
         }
-        .share-id {
-            background: #0f141e;
-            padding: 0.5rem 1rem;
-            border-radius: 1rem;
-            font-family: monospace;
-            font-size: 1.1rem;
-            border: 1px solid #2563eb;
-            text-align: center;
-            margin: 0.5rem 0;
-            word-break: break-all;
+        
+        .messages .msg .sender.host {
+            color: #fca5a5;
+        }
+        
+        .messages .msg .text {
+            color: #e8edf5;
+        }
+
+        .messages::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .messages::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        
+        .messages::-webkit-scrollbar-thumb {
+            background: #2a3348;
+            border-radius: 4px;
+        }
+
+        /* Input row */
+        .input-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .input-row input {
+            flex: 1;
+            padding: 10px 16px;
+            border-radius: 30px;
+            border: 1px solid #2a2a2a;
+            background: #0a0a0a;
+            color: #e8edf5;
+            font-size: 14px;
+            outline: none;
+            font-family: inherit;
+        }
+        
+        .input-row input:focus {
+            border-color: #3b82f6;
+        }
+        
+        .input-row button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 30px;
+            background: #2563eb;
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        
+        .input-row button:active {
+            transform: scale(0.95);
+        }
+        
+        .input-row button:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        /* Mode switch */
+        .mode-switch {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+            background: #0a0a0a;
+            padding: 4px;
+            border-radius: 30px;
+            border: 1px solid #1a1a1a;
+        }
+        
+        .mode-switch button {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            background: transparent;
+            color: #4a5568;
+            letter-spacing: 0.5px;
+        }
+        
+        .mode-switch button.active {
+            background: #2563eb;
+            color: #fff;
+        }
+        
+        .mode-switch button:active {
+            transform: scale(0.95);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Voice level meter */
+        .meter {
+            height: 4px;
+            background: #1a1a1a;
+            border-radius: 4px;
+            margin-top: 8px;
+            overflow: hidden;
+            border: 1px solid #1a1a1a;
+        }
+        
+        .meter .fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #22c55e, #eab308, #ef4444);
+            transition: width 0.1s;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
 
-<h1>📡 VokiToki</h1>
-<div class="sub">Host or Join a voice channel</div>
-
-<div class="card">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span><span class="badge" id="statusBadge">⏸ idle</span></span>
-        <span id="roleBadge" style="color:#8892a8; font-size:0.85rem;"></span>
+<div class="radio">
+    <!-- LEDs -->
+    <div class="leds">
+        <div class="led power" id="powerLed"></div>
+        <div class="led" id="txLed"></div>
+        <div class="led" id="rxLed"></div>
     </div>
 
-    <!-- Mode Selector -->
-    <div class="mode-selector">
-        <button class="active" data-mode="host">👑 Host</button>
-        <button data-mode="join">🔗 Join</button>
+    <!-- Speaker Grille -->
+    <div class="speaker">
+        <div class="speaker-grid">
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+        </div>
+    </div>
+
+    <!-- Display -->
+    <div class="display">
+        <div class="channel" id="channelDisplay">CH: ---</div>
+        <div class="status" id="statusDisplay">STANDBY</div>
+    </div>
+
+    <!-- Mode Switch -->
+    <div class="mode-switch">
+        <button class="active" data-mode="host">👑 HOST</button>
+        <button data-mode="join">🔗 JOIN</button>
     </div>
 
     <!-- Host Mode -->
     <div id="hostMode">
-        <div class="row">
-            <input id="hostRoomInput" placeholder="Channel name" value="campfire" />
-            <button class="primary" id="hostBtn">👑 Host Channel</button>
+        <div class="controls">
+            <input type="text" id="hostRoomInput" placeholder="Channel name" value="campfire" style="flex:1; padding:10px 16px; border-radius:30px; border:1px solid #2a2a2a; background:#0a0a0a; color:#e8edf5; font-size:14px; outline:none; font-family:inherit;">
+            <button class="host" id="hostBtn">HOST</button>
         </div>
-        <div class="share-id" id="hostChannelDisplay" style="display:none;">
-            📢 Share this channel ID: <span id="channelIdDisplay"></span>
+        <div id="hostChannelDisplay" class="hidden" style="text-align:center; color:#4ade80; font-size:12px; margin-bottom:8px; font-family:'Courier New',monospace;">
+            📡 CHANNEL: <span id="channelIdDisplay"></span>
         </div>
     </div>
 
     <!-- Join Mode -->
-    <div id="joinMode" style="display:none;">
-        <div class="row">
-            <input id="joinRoomInput" placeholder="Enter channel ID to join" />
-            <button class="success" id="joinBtn">🔗 Join Channel</button>
+    <div id="joinMode" class="hidden">
+        <div class="controls">
+            <input type="text" id="joinRoomInput" placeholder="Enter channel ID" style="flex:1; padding:10px 16px; border-radius:30px; border:1px solid #2a2a2a; background:#0a0a0a; color:#e8edf5; font-size:14px; outline:none; font-family:inherit;">
+            <button class="success" id="joinBtn">JOIN</button>
         </div>
     </div>
 
-    <hr />
-
-    <div class="user-list" id="userList">
-        <span style="color:#4a5568; font-size:0.8rem;">No users in channel</span>
+    <!-- Users -->
+    <div class="users" id="userList">
+        <span style="color:#4a5568; font-size:11px;">No users online</span>
     </div>
 
-    <!-- Text Chat -->
-    <div class="row">
-        <input id="msgInput" placeholder="Type a message..." maxlength="140" />
-        <button class="primary" id="sendBtn" disabled>Send</button>
-    </div>
-
-    <!-- Voice Controls -->
-    <div class="voice-indicator">
-        <button class="success" id="voiceBtn" style="flex:1; padding:0.8rem; font-size:1.1rem;" disabled>
-            🎤 Hold to Talk
+    <!-- PTT Button -->
+    <div class="ptt-container">
+        <button class="ptt-btn" id="voiceBtn" disabled>
+            <span class="ptt-icon">🎤</span>
+            HOLD TO TALK
         </button>
     </div>
-    <div class="voice-indicator">
-        <span style="font-size:0.75rem; color:#4a5568;">Voice level</span>
-        <div class="bar">
-            <div class="fill" id="voiceLevel"></div>
-        </div>
+
+    <!-- Meter -->
+    <div class="meter">
+        <div class="fill" id="voiceLevel"></div>
     </div>
 
-    <div id="log">💡 Choose Host or Join mode above.</div>
+    <!-- Messages -->
+    <div class="messages" id="log">
+        <div class="msg" style="color:#4a5568; border-bottom:none;">🔌 Standby — choose HOST or JOIN</div>
+    </div>
+
+    <!-- Input -->
+    <div class="input-row">
+        <input type="text" id="msgInput" placeholder="Type a message..." maxlength="140">
+        <button id="sendBtn" disabled>SEND</button>
+    </div>
 </div>
 
 <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
@@ -222,8 +656,11 @@
 
         // ---- DOM refs ----
         const logEl = document.getElementById('log');
-        const statusBadge = document.getElementById('statusBadge');
-        const roleBadge = document.getElementById('roleBadge');
+        const statusDisplay = document.getElementById('statusDisplay');
+        const channelDisplay = document.getElementById('channelDisplay');
+        const powerLed = document.getElementById('powerLed');
+        const txLed = document.getElementById('txLed');
+        const rxLed = document.getElementById('rxLed');
         const userList = document.getElementById('userList');
         const msgInput = document.getElementById('msgInput');
         const sendBtn = document.getElementById('sendBtn');
@@ -269,16 +706,50 @@
         const deviceId = getDeviceId();
 
         // ---- Log helper ----
-        function appendLog(msg) {
+        function appendLog(msg, sender = null, isHost = false) {
             const ts = new Date().toLocaleTimeString();
-            logEl.textContent += `[${ts}] ${msg}\n`;
+            const entry = document.createElement('div');
+            entry.className = 'msg';
+            
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'time';
+            timeSpan.textContent = ts;
+            entry.appendChild(timeSpan);
+
+            if (sender) {
+                const senderSpan = document.createElement('span');
+                senderSpan.className = 'sender' + (isHost ? ' host' : '');
+                senderSpan.textContent = sender + ': ';
+                entry.appendChild(senderSpan);
+            }
+
+            const textSpan = document.createElement('span');
+            textSpan.className = 'text';
+            textSpan.textContent = msg;
+            entry.appendChild(textSpan);
+
+            // Remove placeholder if it exists
+            const placeholder = logEl.querySelector('.msg[style]');
+            if (placeholder && logEl.children.length === 1) {
+                logEl.removeChild(placeholder);
+            }
+
+            logEl.appendChild(entry);
             logEl.scrollTop = logEl.scrollHeight;
+
+            // Keep log manageable
+            while (logEl.children.length > 50) {
+                logEl.removeChild(logEl.firstChild);
+            }
         }
 
         // ---- Set status ----
         function setStatus(text, connected = false, role = null) {
-            statusBadge.textContent = connected ? '● connected' : '⏸ offline';
-            statusBadge.className = 'badge' + (connected ? ' on' : '');
+            statusDisplay.textContent = text;
+            statusDisplay.className = 'status';
+            if (connected) statusDisplay.classList.add('connected');
+            if (text === 'RECORDING') statusDisplay.classList.add('recording');
+
             isConnected = connected;
             sendBtn.disabled = !connected;
             voiceBtn.disabled = !connected;
@@ -287,46 +758,52 @@
             hostRoomInput.disabled = connected;
             joinRoomInput.disabled = connected;
 
-            if (role === 'host') {
-                roleBadge.textContent = '👑 Host';
-                roleBadge.style.color = '#fca5a5';
-            } else if (role === 'joiner') {
-                roleBadge.textContent = '🔗 Joiner';
-                roleBadge.style.color = '#86efac';
+            if (connected) {
+                powerLed.className = 'led power';
             } else {
-                roleBadge.textContent = '';
+                powerLed.className = 'led';
             }
-            myRole = role;
+
+            if (role === 'host') {
+                myRole = 'host';
+            } else if (role === 'joiner') {
+                myRole = 'joiner';
+            } else {
+                myRole = null;
+            }
         }
 
         // ---- Update user list ----
         function updateUsers(userListData, hostId) {
             users = userListData || [];
             const currentId = deviceId;
-            const filtered = users.filter(id => id !== currentId);
 
             if (users.length === 0) {
-                userList.innerHTML = '<span style="color:#4a5568; font-size:0.8rem;">No users in channel</span>';
+                userList.innerHTML = '<span style="color:#4a5568; font-size:11px;">No users online</span>';
             } else {
-                let html = '';
+                userList.innerHTML = '';
                 users.forEach(id => {
                     const isYou = id === currentId;
                     const isHost = id === hostId;
                     let cls = 'user-tag';
                     if (isYou) cls += ' you';
                     if (isHost) cls += ' host';
-                    if (!isYou && !isHost) cls += ' active';
-                    const label = isYou ? 'You' : (isHost ? '👑 ' + id : '📱 ' + id);
-                    html += `<span class="${cls}">${label}</span>`;
+                    const dot = document.createElement('span');
+                    dot.className = 'dot online';
+                    const label = document.createTextNode(isYou ? ' You' : (isHost ? ' 👑 ' + id : ' 📱 ' + id));
+                    const tag = document.createElement('span');
+                    tag.className = cls;
+                    tag.appendChild(dot);
+                    tag.appendChild(label);
+                    userList.appendChild(tag);
                 });
-                userList.innerHTML = html;
             }
         }
 
         // ---- Connect to server ----
         function connectSocket() {
             const SERVER_URL = window.location.origin;
-            appendLog(`🔗 Connecting to ${SERVER_URL}...`);
+            appendLog(`Connecting to ${SERVER_URL}...`);
 
             try {
                 socket = io(SERVER_URL, {
@@ -337,19 +814,21 @@
                 });
 
                 socket.on('connect', () => {
-                    appendLog('✅ Connected to server');
+                    appendLog('✅ Connected');
+                    setStatus('READY', true);
                 });
 
                 socket.on('connect_error', (err) => {
                     appendLog(`❌ Connection error: ${err.message}`);
-                    setStatus('Error', false);
+                    setStatus('ERROR', false);
                 });
 
                 socket.on('disconnect', () => {
-                    appendLog('🔌 Disconnected from server');
-                    setStatus('Disconnected', false);
+                    appendLog('🔌 Disconnected');
+                    setStatus('OFFLINE', false);
                     socket = null;
                     updateUsers([], null);
+                    channelDisplay.textContent = 'CH: ---';
                 });
 
             } catch (err) {
@@ -365,18 +844,21 @@
             room = channelName;
 
             appendLog(`👑 Hosting channel: ${channelName}...`);
+            setStatus('HOSTING...', true, 'host');
 
             socket.emit('hostChannel', channelName, deviceId, (response) => {
                 if (response && response.success) {
                     appendLog(`✅ Channel "${channelName}" created!`);
-                    setStatus(`Hosting "${channelName}"`, true, 'host');
-                    hostChannelDisplay.style.display = 'block';
+                    channelDisplay.textContent = `CH: ${channelName}`;
+                    setStatus('HOST', true, 'host');
+                    hostChannelDisplay.classList.remove('hidden');
                     channelIdDisplay.textContent = channelName;
-                    appendLog(`📢 Share this channel ID: ${channelName}`);
+                    appendLog(`📢 Share: ${channelName}`);
                     setupChannelListeners();
                 } else {
-                    appendLog(`❌ ${response.error || 'Failed to host channel'}`);
-                    appendLog('💡 Try a different channel name.');
+                    appendLog(`❌ ${response.error || 'Failed to host'}`);
+                    setStatus('ERROR', false);
+                    channelDisplay.textContent = 'CH: ---';
                 }
             });
         });
@@ -387,25 +869,28 @@
 
             const channelName = joinRoomInput.value.trim();
             if (!channelName) {
-                appendLog('⚠️ Please enter a channel ID to join.');
+                appendLog('⚠️ Enter a channel ID');
                 return;
             }
 
             room = channelName;
-            appendLog(`🔗 Joining channel: ${channelName}...`);
+            appendLog(`🔗 Joining: ${channelName}...`);
+            setStatus('JOINING...', true, 'joiner');
 
             socket.emit('joinChannel', channelName, deviceId, (response) => {
                 if (response && response.success) {
-                    appendLog(`✅ Joined channel "${channelName}"`);
-                    setStatus(`In "${channelName}"`, true, 'joiner');
+                    appendLog(`✅ Joined "${channelName}"`);
+                    channelDisplay.textContent = `CH: ${channelName}`;
+                    setStatus(`JOINED`, true, 'joiner');
                     appendLog(`👑 Host: ${response.host}`);
                     if (response.users) {
                         updateUsers(response.users, response.host);
                     }
                     setupChannelListeners();
                 } else {
-                    appendLog(`❌ ${response.error || 'Failed to join channel'}`);
-                    appendLog('💡 Make sure the channel exists and the ID is correct.');
+                    appendLog(`❌ ${response.error || 'Failed to join'}`);
+                    setStatus('ERROR', false);
+                    channelDisplay.textContent = 'CH: ---';
                 }
             });
         });
@@ -413,47 +898,58 @@
         // ---- Setup channel event listeners ----
         function setupChannelListeners() {
             socket.on('userJoined', (data) => {
-                appendLog(`👤 ${data.userId} joined the channel`);
+                appendLog(`👤 ${data.userId} joined`);
                 updateUsers(data.users, data.hostId);
             });
 
             socket.on('userLeft', (data) => {
-                appendLog(`👋 ${data.userId} left the channel`);
+                appendLog(`👋 ${data.userId} left`);
                 updateUsers(data.users, data.hostId);
             });
 
             socket.on('message', (data) => {
-                const roleIcon = data.role === 'host' ? '👑' : '🔗';
-                appendLog(`📩 ${roleIcon} ${data.sender}: ${data.text}`);
+                const isHost = data.role === 'host';
+                const icon = isHost ? '👑' : '🔗';
+                appendLog(data.text, `${icon} ${data.sender}`, isHost);
+                rxLed.className = 'led rx';
+                setTimeout(() => { rxLed.className = 'led'; }, 500);
             });
 
             socket.on('voice', (data) => {
-                const roleIcon = data.role === 'host' ? '👑' : '🔗';
-                appendLog(`🎤 ${roleIcon} Voice from ${data.sender}`);
+                if (data.sender === deviceId) {
+                    return;
+                }
+                const isHost = data.role === 'host';
+                const icon = isHost ? '👑' : '🔗';
+                appendLog(`🎤 Voice message`, `${icon} ${data.sender}`, isHost);
                 playVoice(data.audio);
+                rxLed.className = 'led rx';
+                setTimeout(() => { rxLed.className = 'led'; }, 500);
             });
 
             socket.on('channelDestroyed', (msg) => {
                 appendLog(`💥 ${msg}`);
-                appendLog('🔌 Channel closed by host.');
-                setStatus('Channel closed', false);
+                setStatus('CHANNEL CLOSED', false);
                 socket = null;
                 updateUsers([], null);
+                channelDisplay.textContent = 'CH: ---';
             });
         }
 
         // ---- Send text ----
         sendBtn.addEventListener('click', function() {
             if (!socket || !isConnected) {
-                appendLog('⚠️ Not connected to a channel.');
+                appendLog('⚠️ Not connected');
                 return;
             }
             const text = msgInput.value.trim();
             if (!text) return;
 
             socket.emit('sendMessage', { text: text });
-            appendLog(`📤 You: ${text}`);
+            appendLog(text, 'You', myRole === 'host');
             msgInput.value = '';
+            txLed.className = 'led tx';
+            setTimeout(() => { txLed.className = 'led'; }, 300);
         });
 
         msgInput.addEventListener('keyup', (e) => {
@@ -463,6 +959,11 @@
         // ---- Voice recording ----
         async function startRecording() {
             try {
+                setStatus('RECORDING', true, myRole);
+                voiceBtn.classList.add('active');
+                voiceBtn.innerHTML = '<span class="ptt-icon">🔴</span> RELEASE TO SEND';
+                txLed.className = 'led tx';
+
                 mediaStream = await navigator.mediaDevices.getUserMedia({
                     audio: {
                         echoCancellation: true,
@@ -495,32 +996,31 @@
                 mediaRecorder.onstop = () => {
                     if (voiceChunks.length > 0) {
                         const blob = new Blob(voiceChunks, { type: 'audio/webm' });
-                        const reader = new FileReader();
-                        reader.onload = () => {
-                            const base64 = reader.result;
-                            if (socket && isConnected) {
-                                socket.emit('sendVoice', { audio: base64 });
-                                appendLog(`🎤 Voice sent (${blob.size} bytes)`);
-                            }
-                        };
-                        reader.readAsDataURL(blob);
+                        if (blob.size > 100) {
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                                const base64 = reader.result;
+                                if (socket && isConnected) {
+                                    socket.emit('sendVoice', { audio: base64 });
+                                    appendLog(`🎤 Voice sent (${blob.size} bytes)`);
+                                }
+                            };
+                            reader.readAsDataURL(blob);
+                        }
                     }
                     voiceChunks = [];
                 };
 
                 mediaRecorder.start(100);
-
                 isRecording = true;
-                voiceBtn.textContent = '🔴 Release to Send';
-                voiceBtn.className = 'danger';
-                statusBadge.textContent = '● recording';
-                statusBadge.className = 'badge recording';
-
                 updateLevel();
 
             } catch (err) {
-                appendLog(`❌ Microphone error: ${err.message}`);
-                appendLog('💡 Make sure you have a microphone and granted permission.');
+                appendLog(`❌ Mic error: ${err.message}`);
+                setStatus('MIC ERROR', true, myRole);
+                voiceBtn.classList.remove('active');
+                voiceBtn.innerHTML = '<span class="ptt-icon">🎤</span> HOLD TO TALK';
+                txLed.className = 'led';
             }
         }
 
@@ -543,12 +1043,12 @@
             }
 
             isRecording = false;
-            voiceBtn.textContent = '🎤 Hold to Talk';
-            voiceBtn.className = 'success';
+            voiceBtn.classList.remove('active');
+            voiceBtn.innerHTML = '<span class="ptt-icon">🎤</span> HOLD TO TALK';
             voiceLevel.style.width = '0%';
+            txLed.className = 'led';
             if (isConnected) {
-                statusBadge.textContent = '● connected';
-                statusBadge.className = 'badge on';
+                setStatus(myRole === 'host' ? 'HOST' : 'JOINED', true, myRole);
             }
         }
 
@@ -611,12 +1111,30 @@
         // ---- Play voice ----
         function playVoice(base64Data) {
             try {
-                const audio = new Audio(base64Data);
-                audio.play().catch(err => {
-                    appendLog(`⚠️ Could not play voice: ${err.message}`);
-                });
+                if (!base64Data || typeof base64Data !== 'string') {
+                    return;
+                }
+                if (!base64Data.startsWith('data:audio/webm')) {
+                    if (base64Data.startsWith('data:')) {
+                        // It's a data URL but maybe wrong type
+                    } else {
+                        base64Data = 'data:audio/webm;base64,' + base64Data;
+                    }
+                }
+
+                const audio = new Audio();
+                audio.onerror = () => {
+                    appendLog(`⚠️ Audio error`);
+                };
+                audio.src = base64Data;
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        // Silent fail
+                    });
+                }
             } catch (err) {
-                appendLog(`⚠️ Could not play voice: ${err.message}`);
+                // Silent fail
             }
         }
 
@@ -628,26 +1146,23 @@
 
                 const mode = this.dataset.mode;
                 if (mode === 'host') {
-                    hostMode.style.display = 'block';
-                    joinMode.style.display = 'none';
+                    hostMode.classList.remove('hidden');
+                    joinMode.classList.add('hidden');
                 } else {
-                    hostMode.style.display = 'none';
-                    joinMode.style.display = 'block';
+                    hostMode.classList.add('hidden');
+                    joinMode.classList.remove('hidden');
                 }
 
-                // If connected, disconnect first
                 if (isConnected) {
-                    appendLog('⚠️ Switch mode first by leaving the channel.');
+                    appendLog('⚠️ Leave channel to switch mode');
                 }
             });
         });
 
         // ---- Init ----
-        appendLog('📡 VokiToki starting...');
-        appendLog(`📱 Your device ID: ${deviceId}`);
-        appendLog('💡 Choose "Host" to create a channel, or "Join" to connect to one.');
-        appendLog('👑 Host: Create a channel and share the ID.');
-        appendLog('🔗 Join: Enter a channel ID to connect.');
+        appendLog('🔌 VokiToki ready');
+        appendLog('📱 ID: ' + deviceId);
+        appendLog('💡 HOST to create a channel, JOIN to connect');
 
         // Connect socket immediately
         connectSocket();
