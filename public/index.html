@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>VokiToki – Multi-Channel</title>
+    <title>VokiToki – Host/Join</title>
     <style>
         * { box-sizing: border-box; margin: 0; }
         body {
@@ -23,24 +23,8 @@
         }
         h1 { font-size: 1.8rem; margin-bottom: 0.2rem; }
         .sub { color: #8892a8; margin-bottom: 1.5rem; font-size: 0.9rem; }
-        .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-        .tabs button {
-            flex: 1;
-            padding: 0.5rem;
-            border: 1px solid #2e3748;
-            background: transparent;
-            color: #8892a8;
-            border-radius: 2rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .tabs button.active {
-            background: #2563eb;
-            color: #fff;
-            border-color: #3b82f6;
-        }
         .row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; margin: 0.5rem 0; }
-        input, select {
+        input {
             flex: 1;
             padding: 0.6rem 1rem;
             border-radius: 2rem;
@@ -51,7 +35,7 @@
             min-width: 120px;
             outline: none;
         }
-        input:focus, select:focus { border-color: #3b82f6; }
+        input:focus { border-color: #3b82f6; }
         button {
             padding: 0.6rem 1.2rem;
             border: none;
@@ -62,11 +46,12 @@
             cursor: pointer;
             border: 1px solid #3a445a;
             transition: 0.15s;
-            white-space: nowrap;
         }
         button:active { transform: scale(0.96); }
         button.primary { background: #2563eb; color: #fff; border-color: #3b82f6; }
         button.danger { background: #7f1d1d; border-color: #b91c1c; color: #fca5a5; }
+        button.success { background: #059669; color: #fff; border-color: #10b981; }
+        button.warning { background: #d97706; color: #fff; border-color: #f59e0b; }
         button:disabled { opacity: 0.4; pointer-events: none; }
         .badge {
             display: inline-block;
@@ -78,7 +63,13 @@
             color: #94a3b8;
         }
         .badge.on { background: #1e3a3a; color: #34d399; }
-        #log, #bleLog {
+        .badge.host { background: #7f1d1d; color: #fca5a5; }
+        .badge.recording { background: #7f1d1d; color: #fca5a5; animation: pulse 1s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        #log {
             background: #0f141e;
             padding: 0.8rem;
             border-radius: 1rem;
@@ -91,400 +82,586 @@
             border: 1px solid #1e2638;
             margin-top: 0.5rem;
         }
-        .hidden { display: none !important; }
-        .peer-id-box {
+        hr { border: 0; border-top: 1px solid #1e2638; margin: 0.8rem 0; }
+        .voice-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.5rem 0;
+        }
+        .voice-indicator .bar {
+            flex: 1;
+            height: 4px;
+            background: #1e2638;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .voice-indicator .bar .fill {
+            height: 100%;
+            background: #22c55e;
+            width: 0%;
+            transition: width 0.1s;
+        }
+        .user-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+            margin: 0.5rem 0;
+        }
+        .user-tag {
+            background: #1e2a3a;
+            padding: 0.2rem 0.6rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            border: 1px solid #2a3348;
+        }
+        .user-tag.active { border-color: #22c55e; color: #86efac; }
+        .user-tag.host { background: #7f1d1d; border-color: #ef4444; color: #fca5a5; }
+        .user-tag.you { background: #1e3a3a; border-color: #22c55e; color: #86efac; }
+        .mode-selector {
+            display: flex;
+            gap: 0.5rem;
+            margin: 0.5rem 0;
+        }
+        .mode-selector button {
+            flex: 1;
+            padding: 0.8rem;
+            border-radius: 1rem;
+            border: 2px solid #2a3348;
+            background: transparent;
+            color: #8892a8;
+            font-weight: 600;
+        }
+        .mode-selector button.active {
+            border-color: #2563eb;
+            color: #60a5fa;
+            background: #1a2a4a;
+        }
+        .share-id {
             background: #0f141e;
             padding: 0.5rem 1rem;
-            border-radius: 2rem;
+            border-radius: 1rem;
             font-family: monospace;
             font-size: 1.1rem;
             border: 1px solid #2563eb;
-            display: inline-block;
-        }
-        hr { border: 0; border-top: 1px solid #1e2638; margin: 0.8rem 0; }
-        .channel-info {
-            background: #0f141e;
-            padding: 0.3rem 0.8rem;
-            border-radius: 1rem;
-            font-size: 0.8rem;
-            color: #60a5fa;
+            text-align: center;
+            margin: 0.5rem 0;
+            word-break: break-all;
         }
     </style>
 </head>
 <body>
 
 <h1>📡 VokiToki</h1>
-<div class="sub">Multi‑Channel Wi‑Fi + BLE Walkie‑Talkie</div>
+<div class="sub">Host or Join a voice channel</div>
 
-<!-- Channel Selector -->
-<div class="card" style="padding:1rem;">
-    <div class="row">
-        <span style="color:#8892a8;">📻 Channel:</span>
-        <select id="channelSelect">
-            <option value="1">Channel 1</option>
-            <option value="2">Channel 2</option>
-            <option value="3">Channel 3</option>
-            <option value="4">Channel 4</option>
-            <option value="5">Channel 5</option>
-        </select>
-        <span class="channel-info" id="channelInfo">UUID: voki-0001</span>
-    </div>
-</div>
-
-<!-- Tabs -->
-<div class="tabs">
-    <button class="active" data-tab="wifi">📶 Wi‑Fi</button>
-    <button data-tab="ble">📲 BLE</button>
-</div>
-
-<!-- ====== Wi‑Fi (WebRTC) Panel ====== -->
-<div id="panel-wifi" class="card">
+<div class="card">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span><span class="badge" id="wifiStatus">⏸ idle</span></span>
-        <span id="myPeerIdDisplay" style="color:#8892a8; font-size:0.85rem;"></span>
+        <span><span class="badge" id="statusBadge">⏸ idle</span></span>
+        <span id="roleBadge" style="color:#8892a8; font-size:0.85rem;"></span>
     </div>
 
-    <div class="row">
-        <input id="targetPeerInput" placeholder="Enter other Peer ID" />
-        <button class="primary" id="connectBtn">Connect</button>
+    <!-- Mode Selector -->
+    <div class="mode-selector">
+        <button class="active" data-mode="host">👑 Host</button>
+        <button data-mode="join">🔗 Join</button>
     </div>
 
-    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-        <button id="hostBtn">👑 Host (Get ID)</button>
-        <button id="disconnectWifiBtn" class="danger" disabled>Disconnect</button>
+    <!-- Host Mode -->
+    <div id="hostMode">
+        <div class="row">
+            <input id="hostRoomInput" placeholder="Channel name" value="campfire" />
+            <button class="primary" id="hostBtn">👑 Host Channel</button>
+        </div>
+        <div class="share-id" id="hostChannelDisplay" style="display:none;">
+            📢 Share this channel ID: <span id="channelIdDisplay"></span>
+        </div>
+    </div>
+
+    <!-- Join Mode -->
+    <div id="joinMode" style="display:none;">
+        <div class="row">
+            <input id="joinRoomInput" placeholder="Enter channel ID to join" />
+            <button class="success" id="joinBtn">🔗 Join Channel</button>
+        </div>
     </div>
 
     <hr />
 
-    <div class="row">
-        <input id="wifiMsgInput" placeholder="Type a message" maxlength="140" />
-        <button id="wifiSendBtn" disabled>Send</button>
+    <div class="user-list" id="userList">
+        <span style="color:#4a5568; font-size:0.8rem;">No users in channel</span>
     </div>
 
-    <div id="log"></div>
+    <!-- Text Chat -->
+    <div class="row">
+        <input id="msgInput" placeholder="Type a message..." maxlength="140" />
+        <button class="primary" id="sendBtn" disabled>Send</button>
+    </div>
+
+    <!-- Voice Controls -->
+    <div class="voice-indicator">
+        <button class="success" id="voiceBtn" style="flex:1; padding:0.8rem; font-size:1.1rem;" disabled>
+            🎤 Hold to Talk
+        </button>
+    </div>
+    <div class="voice-indicator">
+        <span style="font-size:0.75rem; color:#4a5568;">Voice level</span>
+        <div class="bar">
+            <div class="fill" id="voiceLevel"></div>
+        </div>
+    </div>
+
+    <div id="log">💡 Choose Host or Join mode above.</div>
 </div>
 
-<!-- ====== BLE Panel ====== -->
-<div id="panel-ble" class="card hidden">
-    <p style="color:#8892a8; font-size:0.9rem; margin-bottom:0.8rem;">
-        Requires a peripheral advertising the selected channel's service.
-    </p>
-    <div class="row">
-        <button class="primary" id="bleScanBtn">🔍 Scan & Connect</button>
-        <button id="bleDisconnectBtn" class="danger" disabled>Disconnect</button>
-    </div>
-    <div class="row">
-        <input id="bleMsgInput" placeholder="Message (max 20 chars)" maxlength="20" />
-        <button id="bleSendBtn" disabled>Send</button>
-    </div>
-    <div id="bleLog">Ready – click "Scan & Connect"</div>
-</div>
-
-<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
 <script>
     (function() {
         'use strict';
 
-        // ---- Channel Configuration ----
-        // Each channel gets its own Service UUID (like a different frequency)
-        function getChannelUUID(channel) {
-            // Generate unique UUIDs per channel
-            // Format: 0000voki-0001-1000-8000-00805f9b34fb (channel 1)
-            const base = '0000voki-0001-1000-8000-00805f9b34fb';
-            // Replace the "0001" part with the channel number (padded to 4 digits)
-            const channelHex = String(channel).padStart(4, '0');
-            return `0000voki-${channelHex}-1000-8000-00805f9b34fb`;
+        // ---- DOM refs ----
+        const logEl = document.getElementById('log');
+        const statusBadge = document.getElementById('statusBadge');
+        const roleBadge = document.getElementById('roleBadge');
+        const userList = document.getElementById('userList');
+        const msgInput = document.getElementById('msgInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const voiceBtn = document.getElementById('voiceBtn');
+        const voiceLevel = document.getElementById('voiceLevel');
+
+        const hostMode = document.getElementById('hostMode');
+        const joinMode = document.getElementById('joinMode');
+        const hostRoomInput = document.getElementById('hostRoomInput');
+        const joinRoomInput = document.getElementById('joinRoomInput');
+        const hostBtn = document.getElementById('hostBtn');
+        const joinBtn = document.getElementById('joinBtn');
+        const hostChannelDisplay = document.getElementById('hostChannelDisplay');
+        const channelIdDisplay = document.getElementById('channelIdDisplay');
+
+        const modeButtons = document.querySelectorAll('[data-mode]');
+
+        // ---- State ----
+        let socket = null;
+        let isConnected = false;
+        let isRecording = false;
+        let audioContext = null;
+        let mediaStream = null;
+        let analyser = null;
+        let dataArray = null;
+        let animationFrame = null;
+        let mediaRecorder = null;
+        let voiceChunks = [];
+        let room = null;
+        let myRole = null;
+        let users = [];
+
+        // ---- Get device ID ----
+        function getDeviceId() {
+            let id = localStorage.getItem('vokitoki_device_id');
+            if (!id) {
+                id = 'User-' + Math.random().toString(36).substring(2, 7);
+                localStorage.setItem('vokitoki_device_id', id);
+            }
+            return id;
         }
 
-        let currentChannel = 1;
-        let currentServiceUUID = getChannelUUID(1);
-        const CHAR_UUID = '0000voki-0002-1000-8000-00805f9b34fb';
+        const deviceId = getDeviceId();
 
-        // ---- DOM refs ----
-        const panels = {
-            wifi: document.getElementById('panel-wifi'),
-            ble: document.getElementById('panel-ble'),
-        };
-        const tabs = document.querySelectorAll('[data-tab]');
-        const logEl = document.getElementById('log');
-        const wifiStatus = document.getElementById('wifiStatus');
-        const myPeerIdDisplay = document.getElementById('myPeerIdDisplay');
-
-        const targetPeerInput = document.getElementById('targetPeerInput');
-        const connectBtn = document.getElementById('connectBtn');
-        const hostBtn = document.getElementById('hostBtn');
-        const disconnectWifiBtn = document.getElementById('disconnectWifiBtn');
-        const wifiMsgInput = document.getElementById('wifiMsgInput');
-        const wifiSendBtn = document.getElementById('wifiSendBtn');
-
-        const bleScanBtn = document.getElementById('bleScanBtn');
-        const bleDisconnectBtn = document.getElementById('bleDisconnectBtn');
-        const bleSendBtn = document.getElementById('bleSendBtn');
-        const bleMsgInput = document.getElementById('bleMsgInput');
-        const bleLogEl = document.getElementById('bleLog');
-
-        const channelSelect = document.getElementById('channelSelect');
-        const channelInfo = document.getElementById('channelInfo');
-
-        // ---- Channel change handler ----
-        channelSelect.addEventListener('change', function() {
-            currentChannel = parseInt(this.value);
-            currentServiceUUID = getChannelUUID(currentChannel);
-            channelInfo.textContent = `UUID: ${currentServiceUUID.substring(0, 12)}...`;
-            bleLog(`📻 Switched to Channel ${currentChannel}`);
-            // Disconnect BLE if connected
-            if (bleDevice) {
-                bleDisconnectBtn.click();
-            }
-        });
-
-        // ---- Wi‑Fi (PeerJS) state ----
-        let peer = null;
-        let connection = null;
-        let myPeerId = null;
-
-        // ---- Wi‑Fi helpers ----
+        // ---- Log helper ----
         function appendLog(msg) {
             const ts = new Date().toLocaleTimeString();
             logEl.textContent += `[${ts}] ${msg}\n`;
             logEl.scrollTop = logEl.scrollHeight;
         }
 
-        function setWifiStatus(text, connected = false) {
-            wifiStatus.textContent = text;
-            wifiStatus.className = 'badge' + (connected ? ' on' : '');
+        // ---- Set status ----
+        function setStatus(text, connected = false, role = null) {
+            statusBadge.textContent = connected ? '● connected' : '⏸ offline';
+            statusBadge.className = 'badge' + (connected ? ' on' : '');
+            isConnected = connected;
+            sendBtn.disabled = !connected;
+            voiceBtn.disabled = !connected;
+            hostBtn.disabled = connected;
+            joinBtn.disabled = connected;
+            hostRoomInput.disabled = connected;
+            joinRoomInput.disabled = connected;
+
+            if (role === 'host') {
+                roleBadge.textContent = '👑 Host';
+                roleBadge.style.color = '#fca5a5';
+            } else if (role === 'joiner') {
+                roleBadge.textContent = '🔗 Joiner';
+                roleBadge.style.color = '#86efac';
+            } else {
+                roleBadge.textContent = '';
+            }
+            myRole = role;
         }
 
-        function updateWifiUI() {
-            const isConnected = connection && connection.open;
-            wifiSendBtn.disabled = !isConnected;
-            disconnectWifiBtn.disabled = !isConnected;
-            connectBtn.disabled = isConnected || !peer;
-            hostBtn.disabled = isConnected || !!peer;
-            targetPeerInput.disabled = isConnected;
-            if (isConnected) {
-                setWifiStatus('● connected', true);
-            } else if (peer) {
-                setWifiStatus('⏸ ready (has ID)');
+        // ---- Update user list ----
+        function updateUsers(userListData, hostId) {
+            users = userListData || [];
+            const currentId = deviceId;
+            const filtered = users.filter(id => id !== currentId);
+
+            if (users.length === 0) {
+                userList.innerHTML = '<span style="color:#4a5568; font-size:0.8rem;">No users in channel</span>';
             } else {
-                setWifiStatus('⏸ idle');
+                let html = '';
+                users.forEach(id => {
+                    const isYou = id === currentId;
+                    const isHost = id === hostId;
+                    let cls = 'user-tag';
+                    if (isYou) cls += ' you';
+                    if (isHost) cls += ' host';
+                    if (!isYou && !isHost) cls += ' active';
+                    const label = isYou ? 'You' : (isHost ? '👑 ' + id : '📱 ' + id);
+                    html += `<span class="${cls}">${label}</span>`;
+                });
+                userList.innerHTML = html;
             }
         }
 
-        // ---- Wi‑Fi: Host ----
+        // ---- Connect to server ----
+        function connectSocket() {
+            const SERVER_URL = window.location.origin;
+            appendLog(`🔗 Connecting to ${SERVER_URL}...`);
+
+            try {
+                socket = io(SERVER_URL, {
+                    transports: ['websocket', 'polling'],
+                    reconnection: true,
+                    reconnectionAttempts: 10,
+                    reconnectionDelay: 1000,
+                });
+
+                socket.on('connect', () => {
+                    appendLog('✅ Connected to server');
+                });
+
+                socket.on('connect_error', (err) => {
+                    appendLog(`❌ Connection error: ${err.message}`);
+                    setStatus('Error', false);
+                });
+
+                socket.on('disconnect', () => {
+                    appendLog('🔌 Disconnected from server');
+                    setStatus('Disconnected', false);
+                    socket = null;
+                    updateUsers([], null);
+                });
+
+            } catch (err) {
+                appendLog(`❌ Error: ${err.message}`);
+            }
+        }
+
+        // ---- Host a channel ----
         hostBtn.addEventListener('click', function() {
-            if (peer) {
-                appendLog('Already have a Peer ID. Click Disconnect first.');
-                return;
-            }
-            appendLog('Creating Peer (host)...');
-            peer = new Peer(undefined, {
-                debug: 2,
-            });
-            peer.on('open', (id) => {
-                myPeerId = id;
-                myPeerIdDisplay.textContent = `Your ID: ${id} (Channel ${currentChannel})`;
-                appendLog(`✅ Your Peer ID: ${id} (Channel ${currentChannel})`);
-                appendLog('Share this ID with the other person.');
-                updateWifiUI();
-            });
-            peer.on('connection', (conn) => {
-                appendLog(`📞 Incoming connection from ${conn.peer} on Channel ${currentChannel}`);
-                if (connection) {
-                    appendLog('⚠️ Already connected, ignoring.');
-                    return;
+            if (!socket) connectSocket();
+
+            const channelName = hostRoomInput.value.trim() || 'campfire';
+            room = channelName;
+
+            appendLog(`👑 Hosting channel: ${channelName}...`);
+
+            socket.emit('hostChannel', channelName, deviceId, (response) => {
+                if (response && response.success) {
+                    appendLog(`✅ Channel "${channelName}" created!`);
+                    setStatus(`Hosting "${channelName}"`, true, 'host');
+                    hostChannelDisplay.style.display = 'block';
+                    channelIdDisplay.textContent = channelName;
+                    appendLog(`📢 Share this channel ID: ${channelName}`);
+                    setupChannelListeners();
+                } else {
+                    appendLog(`❌ ${response.error || 'Failed to host channel'}`);
+                    appendLog('💡 Try a different channel name.');
                 }
-                connection = conn;
-                setupConnection(conn);
             });
-            peer.on('error', (err) => {
-                appendLog(`❌ Peer error: ${err.message}`);
-            });
-            updateWifiUI();
         });
 
-        // ---- Wi‑Fi: Connect to other ----
-        connectBtn.addEventListener('click', function() {
-            const target = targetPeerInput.value.trim();
-            if (!target) {
-                appendLog('⚠️ Please enter a Peer ID.');
+        // ---- Join a channel ----
+        joinBtn.addEventListener('click', function() {
+            if (!socket) connectSocket();
+
+            const channelName = joinRoomInput.value.trim();
+            if (!channelName) {
+                appendLog('⚠️ Please enter a channel ID to join.');
                 return;
             }
-            if (!peer) {
-                appendLog('Creating Peer (client)...');
-                peer = new Peer(undefined, { debug: 2 });
-                peer.on('open', (id) => {
-                    myPeerId = id;
-                    myPeerIdDisplay.textContent = `Your ID: ${id} (Channel ${currentChannel})`;
-                    appendLog(`Your ID: ${id} (you can ignore this)`);
-                    doConnect(target);
-                });
-                peer.on('error', (err) => {
-                    appendLog(`❌ Peer error: ${err.message}`);
-                });
-            } else {
-                doConnect(target);
-            }
+
+            room = channelName;
+            appendLog(`🔗 Joining channel: ${channelName}...`);
+
+            socket.emit('joinChannel', channelName, deviceId, (response) => {
+                if (response && response.success) {
+                    appendLog(`✅ Joined channel "${channelName}"`);
+                    setStatus(`In "${channelName}"`, true, 'joiner');
+                    appendLog(`👑 Host: ${response.host}`);
+                    if (response.users) {
+                        updateUsers(response.users, response.host);
+                    }
+                    setupChannelListeners();
+                } else {
+                    appendLog(`❌ ${response.error || 'Failed to join channel'}`);
+                    appendLog('💡 Make sure the channel exists and the ID is correct.');
+                }
+            });
         });
 
-        function doConnect(target) {
-            appendLog(`🔗 Connecting to ${target} on Channel ${currentChannel}...`);
-            const conn = peer.connect(target, { reliable: true });
-            connection = conn;
-            setupConnection(conn);
+        // ---- Setup channel event listeners ----
+        function setupChannelListeners() {
+            socket.on('userJoined', (data) => {
+                appendLog(`👤 ${data.userId} joined the channel`);
+                updateUsers(data.users, data.hostId);
+            });
+
+            socket.on('userLeft', (data) => {
+                appendLog(`👋 ${data.userId} left the channel`);
+                updateUsers(data.users, data.hostId);
+            });
+
+            socket.on('message', (data) => {
+                const roleIcon = data.role === 'host' ? '👑' : '🔗';
+                appendLog(`📩 ${roleIcon} ${data.sender}: ${data.text}`);
+            });
+
+            socket.on('voice', (data) => {
+                const roleIcon = data.role === 'host' ? '👑' : '🔗';
+                appendLog(`🎤 ${roleIcon} Voice from ${data.sender}`);
+                playVoice(data.audio);
+            });
+
+            socket.on('channelDestroyed', (msg) => {
+                appendLog(`💥 ${msg}`);
+                appendLog('🔌 Channel closed by host.');
+                setStatus('Channel closed', false);
+                socket = null;
+                updateUsers([], null);
+            });
         }
 
-        // ---- Wi‑Fi: Setup connection ----
-        function setupConnection(conn) {
-            conn.on('open', () => {
-                appendLog(`✅ Connected to ${conn.peer} on Channel ${currentChannel}`);
-                updateWifiUI();
-                wifiMsgInput.focus();
-            });
-            conn.on('data', (data) => {
-                appendLog(`📩 ${conn.peer} (Ch${currentChannel}): ${data}`);
-            });
-            conn.on('close', () => {
-                appendLog(`🔌 Disconnected from ${conn.peer}`);
-                connection = null;
-                updateWifiUI();
-            });
-            conn.on('error', (err) => {
-                appendLog(`❌ Connection error: ${err.message}`);
-            });
-            if (conn.open) {
-                appendLog(`✅ Already open (connected to ${conn.peer})`);
-                updateWifiUI();
-            }
-        }
-
-        // ---- Wi‑Fi: Send ----
-        wifiSendBtn.addEventListener('click', function() {
-            if (!connection || !connection.open) {
-                appendLog('⚠️ Not connected.');
+        // ---- Send text ----
+        sendBtn.addEventListener('click', function() {
+            if (!socket || !isConnected) {
+                appendLog('⚠️ Not connected to a channel.');
                 return;
             }
-            const text = wifiMsgInput.value.trim();
+            const text = msgInput.value.trim();
             if (!text) return;
-            connection.send(text);
-            appendLog(`📤 You (Ch${currentChannel}): ${text}`);
-            wifiMsgInput.value = '';
-        });
-        wifiMsgInput.addEventListener('keyup', (e) => {
-            if (e.key === 'Enter') wifiSendBtn.click();
+
+            socket.emit('sendMessage', { text: text });
+            appendLog(`📤 You: ${text}`);
+            msgInput.value = '';
         });
 
-        // ---- Wi‑Fi: Disconnect ----
-        disconnectWifiBtn.addEventListener('click', function() {
-            if (connection) {
-                connection.close();
-                connection = null;
-                appendLog('Disconnected manually.');
-                updateWifiUI();
+        msgInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') sendBtn.click();
+        });
+
+        // ---- Voice recording ----
+        async function startRecording() {
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true,
+                        sampleRate: 16000,
+                        channelCount: 1
+                    }
+                });
+
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const source = audioContext.createMediaStreamSource(mediaStream);
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 256;
+                source.connect(analyser);
+                dataArray = new Uint8Array(analyser.fftSize);
+
+                mediaRecorder = new MediaRecorder(mediaStream, {
+                    mimeType: 'audio/webm;codecs=opus'
+                });
+
+                voiceChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        voiceChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = () => {
+                    if (voiceChunks.length > 0) {
+                        const blob = new Blob(voiceChunks, { type: 'audio/webm' });
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                            const base64 = reader.result;
+                            if (socket && isConnected) {
+                                socket.emit('sendVoice', { audio: base64 });
+                                appendLog(`🎤 Voice sent (${blob.size} bytes)`);
+                            }
+                        };
+                        reader.readAsDataURL(blob);
+                    }
+                    voiceChunks = [];
+                };
+
+                mediaRecorder.start(100);
+
+                isRecording = true;
+                voiceBtn.textContent = '🔴 Release to Send';
+                voiceBtn.className = 'danger';
+                statusBadge.textContent = '● recording';
+                statusBadge.className = 'badge recording';
+
+                updateLevel();
+
+            } catch (err) {
+                appendLog(`❌ Microphone error: ${err.message}`);
+                appendLog('💡 Make sure you have a microphone and granted permission.');
             }
-            if (peer) {
-                peer.destroy();
-                peer = null;
-                myPeerId = null;
-                myPeerIdDisplay.textContent = '';
-                appendLog('Peer destroyed.');
-                updateWifiUI();
-            }
-        });
-
-        // ---- BLE (Multi-Channel) ----
-        let bleDevice = null;
-        let bleChar = null;
-
-        function bleLog(msg) {
-            const ts = new Date().toLocaleTimeString();
-            bleLogEl.textContent += `[${ts}] ${msg}\n`;
-            bleLogEl.scrollTop = bleLogEl.scrollHeight;
         }
 
-        bleScanBtn.addEventListener('click', async function() {
-            if (!navigator.bluetooth) {
-                bleLog('❌ Web Bluetooth not supported.');
-                return;
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
             }
+
+            if (audioContext && audioContext.state !== 'closed') {
+                audioContext.close();
+            }
+
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+            }
+
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+                animationFrame = null;
+            }
+
+            isRecording = false;
+            voiceBtn.textContent = '🎤 Hold to Talk';
+            voiceBtn.className = 'success';
+            voiceLevel.style.width = '0%';
+            if (isConnected) {
+                statusBadge.textContent = '● connected';
+                statusBadge.className = 'badge on';
+            }
+        }
+
+        function updateLevel() {
+            if (!analyser || !isRecording) return;
+
+            analyser.getByteFrequencyData(dataArray);
+            let sum = 0;
+            for (let i = 0; i < dataArray.length; i++) {
+                sum += dataArray[i];
+            }
+            const avg = sum / dataArray.length;
+            const percent = Math.min((avg / 128) * 100, 100);
+            voiceLevel.style.width = percent + '%';
+
+            animationFrame = requestAnimationFrame(updateLevel);
+        }
+
+        // ---- Voice button events ----
+        voiceBtn.addEventListener('mousedown', async (e) => {
+            e.preventDefault();
+            if (!isRecording && isConnected) {
+                await startRecording();
+            }
+        });
+
+        voiceBtn.addEventListener('mouseup', (e) => {
+            e.preventDefault();
+            if (isRecording) {
+                stopRecording();
+            }
+        });
+
+        voiceBtn.addEventListener('mouseleave', (e) => {
+            if (isRecording) {
+                stopRecording();
+            }
+        });
+
+        voiceBtn.addEventListener('touchstart', async (e) => {
+            e.preventDefault();
+            if (!isRecording && isConnected) {
+                await startRecording();
+            }
+        });
+
+        voiceBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (isRecording) {
+                stopRecording();
+            }
+        });
+
+        voiceBtn.addEventListener('touchcancel', (e) => {
+            if (isRecording) {
+                stopRecording();
+            }
+        });
+
+        // ---- Play voice ----
+        function playVoice(base64Data) {
             try {
-                bleLog(`🔍 Scanning for Channel ${currentChannel}...`);
-                bleLog(`   Service UUID: ${currentServiceUUID}`);
-                bleDevice = await navigator.bluetooth.requestDevice({
-                    filters: [{ services: [currentServiceUUID] }]
+                const audio = new Audio(base64Data);
+                audio.play().catch(err => {
+                    appendLog(`⚠️ Could not play voice: ${err.message}`);
                 });
-                bleLog(`✅ Found: ${bleDevice.name || 'unnamed'} on Channel ${currentChannel}`);
-                const server = await bleDevice.gatt.connect();
-                const service = await server.getPrimaryService(currentServiceUUID);
-                bleChar = await service.getCharacteristic(CHAR_UUID);
-                bleLog('✅ Characteristic ready');
-
-                if (bleChar.properties.notify) {
-                    await bleChar.startNotifications();
-                    bleChar.addEventListener('characteristicvaluechanged', (e) => {
-                        const txt = new TextDecoder().decode(e.target.value);
-                        bleLog(`📩 Channel ${currentChannel}: ${txt}`);
-                    });
-                    bleLog('✅ Notifications enabled');
-                }
-                const init = await bleChar.readValue();
-                const initText = new TextDecoder().decode(init);
-                bleLog(`📖 Current: "${initText}"`);
-                bleSendBtn.disabled = false;
-                bleDisconnectBtn.disabled = false;
-                bleScanBtn.disabled = true;
             } catch (err) {
-                bleLog(`❌ ${err.message}`);
-                bleDevice = null;
-                bleChar = null;
+                appendLog(`⚠️ Could not play voice: ${err.message}`);
             }
-        });
+        }
 
-        bleSendBtn.addEventListener('click', async function() {
-            if (!bleChar) { bleLog('⚠️ Not connected'); return; }
-            const txt = bleMsgInput.value.trim();
-            if (!txt) return;
-            try {
-                const data = new TextEncoder().encode(txt.slice(0, 20));
-                await bleChar.writeValue(data);
-                bleLog(`📤 Ch${currentChannel}: ${txt}`);
-                bleMsgInput.value = '';
-            } catch (err) {
-                bleLog(`❌ Send error: ${err.message}`);
-            }
-        });
-
-        bleDisconnectBtn.addEventListener('click', function() {
-            if (bleDevice && bleDevice.gatt) bleDevice.gatt.disconnect();
-            bleDevice = null;
-            bleChar = null;
-            bleSendBtn.disabled = true;
-            bleDisconnectBtn.disabled = true;
-            bleScanBtn.disabled = false;
-            bleLog('🔌 Disconnected');
-        });
-
-        // ---- Tab switching ----
-        tabs.forEach(btn => {
+        // ---- Mode switching ----
+        modeButtons.forEach(btn => {
             btn.addEventListener('click', function() {
-                tabs.forEach(b => b.classList.remove('active'));
+                modeButtons.forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
-                const tab = this.dataset.tab;
-                document.querySelectorAll('.card:not(.tabs)').forEach(el => el.classList.add('hidden'));
-                document.getElementById(`panel-${tab}`).classList.remove('hidden');
+
+                const mode = this.dataset.mode;
+                if (mode === 'host') {
+                    hostMode.style.display = 'block';
+                    joinMode.style.display = 'none';
+                } else {
+                    hostMode.style.display = 'none';
+                    joinMode.style.display = 'block';
+                }
+
+                // If connected, disconnect first
+                if (isConnected) {
+                    appendLog('⚠️ Switch mode first by leaving the channel.');
+                }
             });
         });
 
         // ---- Init ----
-        appendLog('📶 Wi‑Fi mode: Click "Host" to get your ID, or enter an ID and click "Connect".');
-        updateWifiUI();
-        bleLog(`📻 BLE mode: Channel ${currentChannel} – UUID: ${currentServiceUUID}`);
-        channelInfo.textContent = `UUID: ${currentServiceUUID.substring(0, 12)}...`;
+        appendLog('📡 VokiToki starting...');
+        appendLog(`📱 Your device ID: ${deviceId}`);
+        appendLog('💡 Choose "Host" to create a channel, or "Join" to connect to one.');
+        appendLog('👑 Host: Create a channel and share the ID.');
+        appendLog('🔗 Join: Enter a channel ID to connect.');
 
-        // ---- Helper to test BLE with nRF Connect ----
-        bleLog('💡 To test BLE, use nRF Connect to advertise this service.');
-        bleLog(`   Service: ${currentServiceUUID}`);
-        bleLog(`   Char: ${CHAR_UUID} (Read/Write/Notify)`);
+        // Connect socket immediately
+        connectSocket();
+
+        // ---- Handle page close ----
+        window.addEventListener('beforeunload', function() {
+            if (socket) {
+                socket.disconnect();
+            }
+            if (isRecording) {
+                stopRecording();
+            }
+        });
+
     })();
 </script>
 </body>
