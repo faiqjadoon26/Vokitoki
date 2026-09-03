@@ -9,87 +9,169 @@ const io = socketIo(server, {
     transports: ['websocket', 'polling']
 });
 
-// Serve static files from the 'public' folder
 app.use(express.static('public'));
 
-// Store rooms and users
-const rooms = {};
+// Store active channels and their hosts
+const channels = {};
 
 io.on('connection', (socket) => {
     console.log('✅ User connected:', socket.id);
 
-    // Join a room
-    socket.on('joinRoom', (roomName, callback) => {
-        // Leave any previous room
-        if (socket.room) {
-            socket.leave(socket.room);
-            if (rooms[socket.room]) {
-                rooms[socket.room] = rooms[socket.room].filter(id => id !== socket.id);
-                io.to(socket.room).emit('userLeft', socket.id);
-            }
+    // --- Host: Create a channel ---
+    socket.on('hostChannel', (channelName, deviceId, callback) => {
+        // Check if channel already exists
+        if (channels[channelName]) {
+            console.log(`❌ Channel ${channelName} already exists`);
+            if (callback) callback({ success: false, error: 'Channel already exists' });
+            return;
         }
 
-        // Create or join room
-        if (!rooms[roomName]) {
-            rooms[roomName] = [];
-        }
+        // Create the channel with this socket as host
+        channels[channelName] = {
+            hostId: socket.id,
+            hostDeviceId: deviceId || socket.id.slice(0, 6),
+            users: [socket.id],
+            deviceIds: [deviceId || socket.id.slice(0, 6)],
+            created: new Date().toISOString()
+        };
 
-        socket.join(roomName);
-        socket.room = roomName;
-        rooms[roomName].push(socket.id);
+        socket.join(channelName);
+        socket.room = channelName;
+        socket.role = 'host';
+        socket.deviceId = deviceId || socket.id.slice(0, 6);
 
-        // Notify others
-        socket.to(roomName).emit('userJoined', socket.id);
+        console.log(`👑 User ${socket.deviceId} hosted channel: ${channelName}`);
 
-        // Send current users to the new user
-        const users = rooms[roomName].filter(id => id !== socket.id);
-        socket.emit('roomUsers', users);
-
-        console.log(`📢 User ${socket.id} joined room: ${roomName}`);
-        if (callback) callback({ success: true, users: users });
+        if (callback) callback({ 
+            success: true, 
+            role: 'host',
+            channel: channelName,
+            channelId: channelName // Use channel name as ID for simplicity
+        });
     });
 
-    // Handle text messages
+    // --- Joiner: Join a channel ---
+    socket.on('joinChannel', (channelName, deviceId, callback) => {
+        // Check if channel exists
+        if (!channels[channelName]) {
+            console.log(`❌ Channel ${channelName} not found`);
+            if (callback) callback({ success: false, error: 'Channel not found' });
+            return;
+        }
+
+        // Check if user is already in the channel
+        if (channels[channelName].users.includes(socket.id)) {
+            if (callback) callback({ success: false, error: 'Already in this channel' });
+            return;
+        }
+
+        // Add user to channel
+        channels[channelName].users.push(socket.id);
+        channels[channelName].deviceIds.push(deviceId || socket.id.slice(0, 6));
+
+        socket.join(channelName);
+        socket.room = channelName;
+        socket.role = 'joiner';
+        socket.deviceId = deviceId || socket.id.slice(0, 6);
+
+        // Notify everyone in the channel
+        io.to(channelName).emit('userJoined', {
+            userId: socket.deviceId,
+            users: channels[channelName].deviceIds,
+            hostId: channels[channelName].hostDeviceId
+        });
+
+        console.log(`👤 User ${socket.deviceId} joined channel: ${channelName}`);
+
+        if (callback) callback({ 
+            success: true, 
+            role: 'joiner',
+            channel: channelName,
+            host: channels[channelName].hostDeviceId,
+            users: channels[channelName].deviceIds
+        });
+    });
+
+    // --- Send message ---
     socket.on('sendMessage', (data) => {
         const room = socket.room;
-        if (!room) return;
+        if (!room || !channels[room]) return;
+        
         io.to(room).emit('message', {
-            sender: data.sender || socket.id.slice(0, 6),
+            sender: socket.deviceId || socket.id.slice(0, 6),
+            role: socket.role,
             text: data.text,
             time: new Date().toISOString()
         });
     });
 
-    // Handle voice messages
+    // --- Send voice ---
     socket.on('sendVoice', (data) => {
         const room = socket.room;
-        if (!room) return;
+        if (!room || !channels[room]) return;
+        
         io.to(room).emit('voice', {
-            sender: data.sender || socket.id.slice(0, 6),
+            sender: socket.deviceId || socket.id.slice(0, 6),
+            role: socket.role,
             audio: data.audio,
             time: new Date().toISOString()
         });
     });
 
-    // Handle disconnection
+    // --- Disconnect ---
     socket.on('disconnect', () => {
-        console.log('❌ User disconnected:', socket.id);
-        if (socket.room && rooms[socket.room]) {
-            rooms[socket.room] = rooms[socket.room].filter(id => id !== socket.id);
-            socket.to(socket.room).emit('userLeft', socket.id);
-            if (rooms[socket.room].length === 0) {
-                delete rooms[socket.room];
+        console.log('❌ User disconnected:', socket.deviceId || socket.id);
+        
+        if (socket.room && channels[socket.room]) {
+            // If host disconnects, the channel is destroyed
+            if (socket.role === 'host') {
+                console.log(`💥 Channel ${socket.room} destroyed (host left)`);
+                io.to(socket.room).emit('channelDestroyed', 'Host left the channel');
+                io.to(socket.room).disconnectSockets();
+                delete channels[socket.room];
+            } else {
+                // Remove joiner from channel
+                channels[socket.room].users = channels[socket.room].users.filter(id => id !== socket.id);
+                channels[socket.room].deviceIds = channels[socket.room].deviceIds.filter(id => id !== socket.deviceId);
+                
+                io.to(socket.room).emit('userLeft', {
+                    userId: socket.deviceId || socket.id.slice(0, 6),
+                    users: channels[socket.room].deviceIds
+                });
+                
+                // If channel is empty, destroy it
+                if (channels[socket.room].users.length === 0) {
+                    console.log(`💥 Channel ${socket.room} destroyed (empty)`);
+                    delete channels[socket.room];
+                }
             }
+            socket.leave(socket.room);
+            socket.room = null;
         }
     });
 
-    // Handle leave room
-    socket.on('leaveRoom', () => {
-        if (socket.room && rooms[socket.room]) {
-            rooms[socket.room] = rooms[socket.room].filter(id => id !== socket.id);
-            socket.to(socket.room).emit('userLeft', socket.id);
+    // --- Leave channel (joiner only) ---
+    socket.on('leaveChannel', () => {
+        if (socket.room && channels[socket.room] && socket.role === 'joiner') {
+            channels[socket.room].users = channels[socket.room].users.filter(id => id !== socket.id);
+            channels[socket.room].deviceIds = channels[socket.room].deviceIds.filter(id => id !== socket.deviceId);
+            
+            io.to(socket.room).emit('userLeft', {
+                userId: socket.deviceId || socket.id.slice(0, 6),
+                users: channels[socket.room].deviceIds
+            });
+            
             socket.leave(socket.room);
+            console.log(`👋 User ${socket.deviceId} left channel: ${socket.room}`);
             socket.room = null;
+            socket.role = null;
+        }
+    });
+
+    // --- Get list of active channels (for host to check if name is taken) ---
+    socket.on('checkChannel', (channelName, callback) => {
+        if (callback) {
+            callback({ exists: !!channels[channelName] });
         }
     });
 });
