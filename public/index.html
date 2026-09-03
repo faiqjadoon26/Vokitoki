@@ -199,10 +199,15 @@
             font-size: 14px;
             outline: none;
             font-family: inherit;
+            min-width: 0;
         }
         
         .controls input:focus {
             border-color: #3b82f6;
+        }
+        
+        .controls input::placeholder {
+            color: #4a5568;
         }
         
         .controls button {
@@ -516,7 +521,7 @@
     <!-- Join Mode -->
     <div id="joinMode" class="hidden">
         <div class="controls">
-            <input type="text" id="joinRoomInput" placeholder="Enter channel ID">
+            <input type="text" id="joinRoomInput" placeholder="Enter channel ID to join">
             <button class="join" id="joinBtn">JOIN</button>
         </div>
     </div>
@@ -754,11 +759,12 @@
             if (!channelName) {
                 statusMsg.textContent = '⚠️ Enter a channel ID';
                 statusMsg.className = 'status-msg';
+                joinRoomInput.focus();
                 return;
             }
 
             room = channelName;
-            statusMsg.textContent = '🔗 Joining...';
+            statusMsg.textContent = '🔗 Joining ' + channelName + '...';
             statusMsg.className = 'status-msg active';
 
             socket.emit('joinChannel', channelName, deviceId, (response) => {
@@ -772,11 +778,26 @@
                     statusMsg.className = 'status-msg active';
                     setupChannelListeners();
                 } else {
-                    statusMsg.textContent = '❌ ' + (response.error || 'Failed to join');
+                    statusMsg.textContent = '❌ ' + (response.error || 'Channel not found');
                     statusMsg.className = 'status-msg';
                     channelDisplay.textContent = 'CH: ---';
                 }
             });
+        });
+
+        // ---- Enter key support ----
+        joinRoomInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                joinBtn.click();
+            }
+        });
+
+        hostRoomInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                hostBtn.click();
+            }
         });
 
         // ---- Setup channel event listeners ----
@@ -1016,6 +1037,10 @@
                 } else {
                     hostMode.classList.add('hidden');
                     joinMode.classList.remove('hidden');
+                    // Focus the join input when switching to join mode
+                    setTimeout(() => {
+                        joinRoomInput.focus();
+                    }, 100);
                 }
 
                 if (isConnected) {
