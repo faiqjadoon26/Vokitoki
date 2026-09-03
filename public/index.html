@@ -113,7 +113,7 @@
             margin-bottom: 16px;
             border: 1px solid #3a3a3a;
             box-shadow: inset 0 4px 12px rgba(0,0,0,0.6);
-            min-height: 60px;
+            min-height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -147,7 +147,7 @@
             border: 1px solid #2a2a2a;
             box-shadow: inset 0 4px 12px rgba(0,0,0,0.8);
             font-family: 'Courier New', monospace;
-            min-height: 70px;
+            min-height: 65px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -189,9 +189,24 @@
             margin-bottom: 16px;
         }
         
-        .controls button {
+        .controls input {
             flex: 1;
-            padding: 10px 8px;
+            padding: 10px 16px;
+            border-radius: 30px;
+            border: 1px solid #2a2a2a;
+            background: #0a0a0a;
+            color: #e8edf5;
+            font-size: 14px;
+            outline: none;
+            font-family: inherit;
+        }
+        
+        .controls input:focus {
+            border-color: #3b82f6;
+        }
+        
+        .controls button {
+            padding: 10px 16px;
             border: none;
             border-radius: 30px;
             font-weight: 700;
@@ -204,28 +219,11 @@
             color: #94a3b8;
             border: 1px solid #3a3a3a;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            white-space: nowrap;
         }
         
         .controls button:active {
             transform: scale(0.95);
-        }
-        
-        .controls button.primary {
-            background: #2563eb;
-            color: #fff;
-            border-color: #3b82f6;
-        }
-        
-        .controls button.success {
-            background: #059669;
-            color: #fff;
-            border-color: #10b981;
-        }
-        
-        .controls button.danger {
-            background: #7f1d1d;
-            color: #fca5a5;
-            border-color: #b91c1c;
         }
         
         .controls button.host {
@@ -234,271 +232,13 @@
             border-color: #f59e0b;
         }
         
-        .controls button:disabled {
-            opacity: 0.4;
-            pointer-events: none;
-        }
-
-        /* PTT Button */
-        .ptt-container {
-            margin-bottom: 16px;
-        }
-        
-        .ptt-btn {
-            width: 100%;
-            padding: 20px;
-            border: none;
-            border-radius: 60px;
-            font-size: 20px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: 0.15s;
-            background: linear-gradient(180deg, #2a2a2a, #1a1a1a);
-            color: #94a3b8;
-            border: 2px solid #3a3a3a;
-            box-shadow: 
-                0 8px 24px rgba(0,0,0,0.4),
-                inset 0 2px 0 rgba(255,255,255,0.05);
-            position: relative;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-        
-        .ptt-btn:active {
-            transform: scale(0.97);
-        }
-        
-        .ptt-btn.active {
-            background: linear-gradient(180deg, #7f1d1d, #4a0a0a);
-            border-color: #ef4444;
-            color: #fca5a5;
-            box-shadow: 
-                0 8px 24px rgba(239,68,68,0.2),
-                inset 0 2px 0 rgba(255,255,255,0.1);
-        }
-        
-        .ptt-btn.active .ptt-icon {
-            animation: pulse-ptt 0.3s infinite;
-        }
-        
-        .ptt-btn .ptt-icon {
-            font-size: 28px;
-            display: block;
-            margin-bottom: 4px;
-        }
-        
-        @keyframes pulse-ptt {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        /* Volume knob */
-        .knobs {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            margin-bottom: 16px;
-        }
-        
-        .knob-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
-        
-        .knob-group label {
-            font-size: 10px;
-            color: #4a5568;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-        
-        .knob {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 40% 35%, #4a4a4a, #1a1a1a);
-            border: 2px solid #3a3a3a;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.3);
-            cursor: pointer;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .knob::after {
-            content: '';
-            width: 4px;
-            height: 14px;
-            background: #6a6a6a;
-            border-radius: 2px;
-            position: absolute;
-            top: 4px;
-            box-shadow: 0 0 4px rgba(0,0,0,0.3);
-        }
-        
-        .knob input[type="range"] {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 40px;
-            height: 40px;
-            background: transparent;
-            position: absolute;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-        
-        .knob input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: transparent;
-            border: none;
-        }
-
-        /* User list */
-        .users {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            padding: 8px 0;
-            min-height: 32px;
-            align-items: center;
-        }
-        
-        .user-tag {
-            background: #1e2a3a;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            color: #94a3b8;
-            border: 1px solid #2a3348;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        
-        .user-tag.host {
-            background: #7f1d1d;
-            border-color: #ef4444;
-            color: #fca5a5;
-        }
-        
-        .user-tag.you {
-            background: #1e3a3a;
-            border-color: #22c55e;
-            color: #86efac;
-        }
-        
-        .user-tag .dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-        
-        .user-tag .dot.online {
-            background: #22c55e;
-        }
-
-        /* Messages */
-        .messages {
-            background: #0a0a0a;
-            border-radius: 12px;
-            padding: 12px 14px;
-            max-height: 150px;
-            overflow-y: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            line-height: 1.6;
-            border: 1px solid #1a1a1a;
-            margin-top: 8px;
-            scroll-behavior: smooth;
-        }
-        
-        .messages .msg {
-            color: #94a3b8;
-            padding: 2px 0;
-            border-bottom: 1px solid #111;
-        }
-        
-        .messages .msg .time {
-            color: #4a5568;
-            margin-right: 8px;
-        }
-        
-        .messages .msg .sender {
-            color: #60a5fa;
-        }
-        
-        .messages .msg .sender.host {
-            color: #fca5a5;
-        }
-        
-        .messages .msg .text {
-            color: #e8edf5;
-        }
-
-        .messages::-webkit-scrollbar {
-            width: 4px;
-        }
-        
-        .messages::-webkit-scrollbar-track {
-            background: #0a0a0a;
-        }
-        
-        .messages::-webkit-scrollbar-thumb {
-            background: #2a3348;
-            border-radius: 4px;
-        }
-
-        /* Input row */
-        .input-row {
-            display: flex;
-            gap: 8px;
-            margin-top: 8px;
-        }
-        
-        .input-row input {
-            flex: 1;
-            padding: 10px 16px;
-            border-radius: 30px;
-            border: 1px solid #2a2a2a;
-            background: #0a0a0a;
-            color: #e8edf5;
-            font-size: 14px;
-            outline: none;
-            font-family: inherit;
-        }
-        
-        .input-row input:focus {
-            border-color: #3b82f6;
-        }
-        
-        .input-row button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 30px;
-            background: #2563eb;
+        .controls button.join {
+            background: #059669;
             color: #fff;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: 0.2s;
-            white-space: nowrap;
+            border-color: #10b981;
         }
         
-        .input-row button:active {
-            transform: scale(0.95);
-        }
-        
-        .input-row button:disabled {
+        .controls button:disabled {
             opacity: 0.4;
             pointer-events: none;
         }
@@ -541,12 +281,117 @@
             display: none !important;
         }
 
+        /* Users */
+        .users {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 8px 0;
+            min-height: 32px;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .user-tag {
+            background: #1e2a3a;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            color: #94a3b8;
+            border: 1px solid #2a3348;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .user-tag.host {
+            background: #7f1d1d;
+            border-color: #ef4444;
+            color: #fca5a5;
+        }
+        
+        .user-tag.you {
+            background: #1e3a3a;
+            border-color: #22c55e;
+            color: #86efac;
+        }
+        
+        .user-tag .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .user-tag .dot.online {
+            background: #22c55e;
+        }
+
+        /* PTT Button */
+        .ptt-container {
+            margin: 12px 0 8px;
+        }
+        
+        .ptt-btn {
+            width: 100%;
+            padding: 24px;
+            border: none;
+            border-radius: 60px;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.15s;
+            background: linear-gradient(180deg, #2a2a2a, #1a1a1a);
+            color: #94a3b8;
+            border: 2px solid #3a3a3a;
+            box-shadow: 
+                0 8px 24px rgba(0,0,0,0.4),
+                inset 0 2px 0 rgba(255,255,255,0.05);
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        .ptt-btn:active {
+            transform: scale(0.97);
+        }
+        
+        .ptt-btn.active {
+            background: linear-gradient(180deg, #7f1d1d, #4a0a0a);
+            border-color: #ef4444;
+            color: #fca5a5;
+            box-shadow: 
+                0 8px 24px rgba(239,68,68,0.2),
+                inset 0 2px 0 rgba(255,255,255,0.1);
+        }
+        
+        .ptt-btn.active .ptt-icon {
+            animation: pulse-ptt 0.3s infinite;
+        }
+        
+        .ptt-btn .ptt-icon {
+            font-size: 32px;
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .ptt-btn .ptt-label {
+            font-size: 14px;
+        }
+        
+        @keyframes pulse-ptt {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
         /* Voice level meter */
         .meter {
             height: 4px;
             background: #1a1a1a;
             border-radius: 4px;
-            margin-top: 8px;
+            margin: 8px 0 12px;
             overflow: hidden;
             border: 1px solid #1a1a1a;
         }
@@ -557,6 +402,66 @@
             background: linear-gradient(90deg, #22c55e, #eab308, #ef4444);
             transition: width 0.1s;
             border-radius: 4px;
+        }
+
+        /* Channel ID display */
+        .channel-id {
+            text-align: center;
+            color: #4ade80;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            padding: 4px 0;
+            letter-spacing: 1px;
+        }
+
+        .channel-id .label {
+            color: #4a5568;
+        }
+
+        /* Status messages */
+        .status-msg {
+            text-align: center;
+            color: #4a5568;
+            font-size: 11px;
+            padding: 6px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .status-msg.active {
+            color: #4ade80;
+        }
+
+        .status-msg.recording {
+            color: #ef4444;
+            animation: pulse-text 0.5s infinite;
+        }
+
+        /* Disconnect button */
+        .disconnect-btn {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.2s;
+            background: #2a2a2a;
+            color: #4a5568;
+            border: 1px solid #3a3a3a;
+            margin-top: 8px;
+        }
+        
+        .disconnect-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .disconnect-btn.active {
+            background: #7f1d1d;
+            color: #fca5a5;
+            border-color: #b91c1c;
         }
     </style>
 </head>
@@ -603,20 +508,22 @@
     <!-- Host Mode -->
     <div id="hostMode">
         <div class="controls">
-            <input type="text" id="hostRoomInput" placeholder="Channel name" value="campfire" style="flex:1; padding:10px 16px; border-radius:30px; border:1px solid #2a2a2a; background:#0a0a0a; color:#e8edf5; font-size:14px; outline:none; font-family:inherit;">
+            <input type="text" id="hostRoomInput" placeholder="Channel name" value="campfire">
             <button class="host" id="hostBtn">HOST</button>
-        </div>
-        <div id="hostChannelDisplay" class="hidden" style="text-align:center; color:#4ade80; font-size:12px; margin-bottom:8px; font-family:'Courier New',monospace;">
-            📡 CHANNEL: <span id="channelIdDisplay"></span>
         </div>
     </div>
 
     <!-- Join Mode -->
     <div id="joinMode" class="hidden">
         <div class="controls">
-            <input type="text" id="joinRoomInput" placeholder="Enter channel ID" style="flex:1; padding:10px 16px; border-radius:30px; border:1px solid #2a2a2a; background:#0a0a0a; color:#e8edf5; font-size:14px; outline:none; font-family:inherit;">
-            <button class="success" id="joinBtn">JOIN</button>
+            <input type="text" id="joinRoomInput" placeholder="Enter channel ID">
+            <button class="join" id="joinBtn">JOIN</button>
         </div>
+    </div>
+
+    <!-- Channel ID Display -->
+    <div id="channelIdDisplay" class="channel-id hidden">
+        <span class="label">📡 CHANNEL:</span> <span id="channelIdText"></span>
     </div>
 
     <!-- Users -->
@@ -624,11 +531,14 @@
         <span style="color:#4a5568; font-size:11px;">No users online</span>
     </div>
 
+    <!-- Status Message -->
+    <div class="status-msg" id="statusMsg">🔌 Press HOST or JOIN to start</div>
+
     <!-- PTT Button -->
     <div class="ptt-container">
         <button class="ptt-btn" id="voiceBtn" disabled>
             <span class="ptt-icon">🎤</span>
-            HOLD TO TALK
+            <span class="ptt-label">HOLD TO TALK</span>
         </button>
     </div>
 
@@ -637,16 +547,8 @@
         <div class="fill" id="voiceLevel"></div>
     </div>
 
-    <!-- Messages -->
-    <div class="messages" id="log">
-        <div class="msg" style="color:#4a5568; border-bottom:none;">🔌 Standby — choose HOST or JOIN</div>
-    </div>
-
-    <!-- Input -->
-    <div class="input-row">
-        <input type="text" id="msgInput" placeholder="Type a message..." maxlength="140">
-        <button id="sendBtn" disabled>SEND</button>
-    </div>
+    <!-- Disconnect -->
+    <button class="disconnect-btn" id="disconnectBtn" disabled>LEAVE CHANNEL</button>
 </div>
 
 <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
@@ -655,17 +557,16 @@
         'use strict';
 
         // ---- DOM refs ----
-        const logEl = document.getElementById('log');
         const statusDisplay = document.getElementById('statusDisplay');
         const channelDisplay = document.getElementById('channelDisplay');
         const powerLed = document.getElementById('powerLed');
         const txLed = document.getElementById('txLed');
         const rxLed = document.getElementById('rxLed');
         const userList = document.getElementById('userList');
-        const msgInput = document.getElementById('msgInput');
-        const sendBtn = document.getElementById('sendBtn');
         const voiceBtn = document.getElementById('voiceBtn');
         const voiceLevel = document.getElementById('voiceLevel');
+        const statusMsg = document.getElementById('statusMsg');
+        const disconnectBtn = document.getElementById('disconnectBtn');
 
         const hostMode = document.getElementById('hostMode');
         const joinMode = document.getElementById('joinMode');
@@ -673,8 +574,8 @@
         const joinRoomInput = document.getElementById('joinRoomInput');
         const hostBtn = document.getElementById('hostBtn');
         const joinBtn = document.getElementById('joinBtn');
-        const hostChannelDisplay = document.getElementById('hostChannelDisplay');
         const channelIdDisplay = document.getElementById('channelIdDisplay');
+        const channelIdText = document.getElementById('channelIdText');
 
         const modeButtons = document.querySelectorAll('[data-mode]');
 
@@ -705,44 +606,6 @@
 
         const deviceId = getDeviceId();
 
-        // ---- Log helper ----
-        function appendLog(msg, sender = null, isHost = false) {
-            const ts = new Date().toLocaleTimeString();
-            const entry = document.createElement('div');
-            entry.className = 'msg';
-            
-            const timeSpan = document.createElement('span');
-            timeSpan.className = 'time';
-            timeSpan.textContent = ts;
-            entry.appendChild(timeSpan);
-
-            if (sender) {
-                const senderSpan = document.createElement('span');
-                senderSpan.className = 'sender' + (isHost ? ' host' : '');
-                senderSpan.textContent = sender + ': ';
-                entry.appendChild(senderSpan);
-            }
-
-            const textSpan = document.createElement('span');
-            textSpan.className = 'text';
-            textSpan.textContent = msg;
-            entry.appendChild(textSpan);
-
-            // Remove placeholder if it exists
-            const placeholder = logEl.querySelector('.msg[style]');
-            if (placeholder && logEl.children.length === 1) {
-                logEl.removeChild(placeholder);
-            }
-
-            logEl.appendChild(entry);
-            logEl.scrollTop = logEl.scrollHeight;
-
-            // Keep log manageable
-            while (logEl.children.length > 50) {
-                logEl.removeChild(logEl.firstChild);
-            }
-        }
-
         // ---- Set status ----
         function setStatus(text, connected = false, role = null) {
             statusDisplay.textContent = text;
@@ -751,17 +614,21 @@
             if (text === 'RECORDING') statusDisplay.classList.add('recording');
 
             isConnected = connected;
-            sendBtn.disabled = !connected;
             voiceBtn.disabled = !connected;
             hostBtn.disabled = connected;
             joinBtn.disabled = connected;
             hostRoomInput.disabled = connected;
             joinRoomInput.disabled = connected;
+            disconnectBtn.disabled = !connected;
 
             if (connected) {
                 powerLed.className = 'led power';
+                disconnectBtn.classList.add('active');
+                disconnectBtn.textContent = 'LEAVE CHANNEL';
             } else {
                 powerLed.className = 'led';
+                disconnectBtn.classList.remove('active');
+                disconnectBtn.textContent = 'LEAVE CHANNEL';
             }
 
             if (role === 'host') {
@@ -770,6 +637,21 @@
                 myRole = 'joiner';
             } else {
                 myRole = null;
+            }
+
+            // Update status message
+            if (connected && role === 'host') {
+                statusMsg.textContent = '👑 You are hosting. Share the channel ID!';
+                statusMsg.className = 'status-msg active';
+            } else if (connected && role === 'joiner') {
+                statusMsg.textContent = '🔗 Connected to channel. Press PTT to talk.';
+                statusMsg.className = 'status-msg active';
+            } else if (connected) {
+                statusMsg.textContent = '📡 Connected. Press PTT to talk.';
+                statusMsg.className = 'status-msg active';
+            } else {
+                statusMsg.textContent = '🔌 Press HOST or JOIN to start';
+                statusMsg.className = 'status-msg';
             }
         }
 
@@ -803,7 +685,6 @@
         // ---- Connect to server ----
         function connectSocket() {
             const SERVER_URL = window.location.origin;
-            appendLog(`Connecting to ${SERVER_URL}...`);
 
             try {
                 socket = io(SERVER_URL, {
@@ -814,25 +695,27 @@
                 });
 
                 socket.on('connect', () => {
-                    appendLog('✅ Connected');
                     setStatus('READY', true);
                 });
 
                 socket.on('connect_error', (err) => {
-                    appendLog(`❌ Connection error: ${err.message}`);
                     setStatus('ERROR', false);
+                    statusMsg.textContent = '❌ Connection error: ' + err.message;
+                    statusMsg.className = 'status-msg';
                 });
 
                 socket.on('disconnect', () => {
-                    appendLog('🔌 Disconnected');
                     setStatus('OFFLINE', false);
                     socket = null;
                     updateUsers([], null);
                     channelDisplay.textContent = 'CH: ---';
+                    statusMsg.textContent = '🔌 Disconnected';
+                    statusMsg.className = 'status-msg';
                 });
 
             } catch (err) {
-                appendLog(`❌ Error: ${err.message}`);
+                statusMsg.textContent = '❌ Error: ' + err.message;
+                statusMsg.className = 'status-msg';
             }
         }
 
@@ -843,21 +726,21 @@
             const channelName = hostRoomInput.value.trim() || 'campfire';
             room = channelName;
 
-            appendLog(`👑 Hosting channel: ${channelName}...`);
-            setStatus('HOSTING...', true, 'host');
+            statusMsg.textContent = '👑 Creating channel...';
+            statusMsg.className = 'status-msg active';
 
             socket.emit('hostChannel', channelName, deviceId, (response) => {
                 if (response && response.success) {
-                    appendLog(`✅ Channel "${channelName}" created!`);
-                    channelDisplay.textContent = `CH: ${channelName}`;
+                    channelDisplay.textContent = 'CH: ' + channelName;
                     setStatus('HOST', true, 'host');
-                    hostChannelDisplay.classList.remove('hidden');
-                    channelIdDisplay.textContent = channelName;
-                    appendLog(`📢 Share: ${channelName}`);
+                    channelIdDisplay.classList.remove('hidden');
+                    channelIdText.textContent = channelName;
+                    statusMsg.textContent = '👑 Channel created! Share: ' + channelName;
+                    statusMsg.className = 'status-msg active';
                     setupChannelListeners();
                 } else {
-                    appendLog(`❌ ${response.error || 'Failed to host'}`);
-                    setStatus('ERROR', false);
+                    statusMsg.textContent = '❌ ' + (response.error || 'Failed to host');
+                    statusMsg.className = 'status-msg';
                     channelDisplay.textContent = 'CH: ---';
                 }
             });
@@ -869,27 +752,28 @@
 
             const channelName = joinRoomInput.value.trim();
             if (!channelName) {
-                appendLog('⚠️ Enter a channel ID');
+                statusMsg.textContent = '⚠️ Enter a channel ID';
+                statusMsg.className = 'status-msg';
                 return;
             }
 
             room = channelName;
-            appendLog(`🔗 Joining: ${channelName}...`);
-            setStatus('JOINING...', true, 'joiner');
+            statusMsg.textContent = '🔗 Joining...';
+            statusMsg.className = 'status-msg active';
 
             socket.emit('joinChannel', channelName, deviceId, (response) => {
                 if (response && response.success) {
-                    appendLog(`✅ Joined "${channelName}"`);
-                    channelDisplay.textContent = `CH: ${channelName}`;
-                    setStatus(`JOINED`, true, 'joiner');
-                    appendLog(`👑 Host: ${response.host}`);
+                    channelDisplay.textContent = 'CH: ' + channelName;
+                    setStatus('JOINED', true, 'joiner');
                     if (response.users) {
                         updateUsers(response.users, response.host);
                     }
+                    statusMsg.textContent = '🔗 Connected to ' + channelName;
+                    statusMsg.className = 'status-msg active';
                     setupChannelListeners();
                 } else {
-                    appendLog(`❌ ${response.error || 'Failed to join'}`);
-                    setStatus('ERROR', false);
+                    statusMsg.textContent = '❌ ' + (response.error || 'Failed to join');
+                    statusMsg.className = 'status-msg';
                     channelDisplay.textContent = 'CH: ---';
                 }
             });
@@ -898,71 +782,42 @@
         // ---- Setup channel event listeners ----
         function setupChannelListeners() {
             socket.on('userJoined', (data) => {
-                appendLog(`👤 ${data.userId} joined`);
                 updateUsers(data.users, data.hostId);
+                rxLed.className = 'led rx';
+                setTimeout(() => { rxLed.className = 'led'; }, 300);
             });
 
             socket.on('userLeft', (data) => {
-                appendLog(`👋 ${data.userId} left`);
                 updateUsers(data.users, data.hostId);
             });
 
-            socket.on('message', (data) => {
-                const isHost = data.role === 'host';
-                const icon = isHost ? '👑' : '🔗';
-                appendLog(data.text, `${icon} ${data.sender}`, isHost);
-                rxLed.className = 'led rx';
-                setTimeout(() => { rxLed.className = 'led'; }, 500);
-            });
-
             socket.on('voice', (data) => {
-                if (data.sender === deviceId) {
-                    return;
-                }
-                const isHost = data.role === 'host';
-                const icon = isHost ? '👑' : '🔗';
-                appendLog(`🎤 Voice message`, `${icon} ${data.sender}`, isHost);
-                playVoice(data.audio);
+                if (data.sender === deviceId) return;
                 rxLed.className = 'led rx';
                 setTimeout(() => { rxLed.className = 'led'; }, 500);
+                playVoice(data.audio);
             });
 
             socket.on('channelDestroyed', (msg) => {
-                appendLog(`💥 ${msg}`);
+                statusMsg.textContent = '💥 ' + msg;
+                statusMsg.className = 'status-msg';
                 setStatus('CHANNEL CLOSED', false);
                 socket = null;
                 updateUsers([], null);
                 channelDisplay.textContent = 'CH: ---';
+                channelIdDisplay.classList.add('hidden');
             });
         }
-
-        // ---- Send text ----
-        sendBtn.addEventListener('click', function() {
-            if (!socket || !isConnected) {
-                appendLog('⚠️ Not connected');
-                return;
-            }
-            const text = msgInput.value.trim();
-            if (!text) return;
-
-            socket.emit('sendMessage', { text: text });
-            appendLog(text, 'You', myRole === 'host');
-            msgInput.value = '';
-            txLed.className = 'led tx';
-            setTimeout(() => { txLed.className = 'led'; }, 300);
-        });
-
-        msgInput.addEventListener('keyup', (e) => {
-            if (e.key === 'Enter') sendBtn.click();
-        });
 
         // ---- Voice recording ----
         async function startRecording() {
             try {
                 setStatus('RECORDING', true, myRole);
                 voiceBtn.classList.add('active');
-                voiceBtn.innerHTML = '<span class="ptt-icon">🔴</span> RELEASE TO SEND';
+                voiceBtn.innerHTML = '<span class="ptt-icon">🔴</span><span class="ptt-label">RELEASE TO SEND</span>';
                 txLed.className = 'led tx';
+                statusMsg.textContent = '🎤 Recording... speak now!';
+                statusMsg.className = 'status-msg recording';
 
                 mediaStream = await navigator.mediaDevices.getUserMedia({
                     audio: {
@@ -1002,7 +857,8 @@
                                 const base64 = reader.result;
                                 if (socket && isConnected) {
                                     socket.emit('sendVoice', { audio: base64 });
-                                    appendLog(`🎤 Voice sent (${blob.size} bytes)`);
+                                    txLed.className = 'led tx';
+                                    setTimeout(() => { txLed.className = 'led'; }, 300);
                                 }
                             };
                             reader.readAsDataURL(blob);
@@ -1016,10 +872,11 @@
                 updateLevel();
 
             } catch (err) {
-                appendLog(`❌ Mic error: ${err.message}`);
+                statusMsg.textContent = '❌ Mic error: ' + err.message;
+                statusMsg.className = 'status-msg';
                 setStatus('MIC ERROR', true, myRole);
                 voiceBtn.classList.remove('active');
-                voiceBtn.innerHTML = '<span class="ptt-icon">🎤</span> HOLD TO TALK';
+                voiceBtn.innerHTML = '<span class="ptt-icon">🎤</span><span class="ptt-label">HOLD TO TALK</span>';
                 txLed.className = 'led';
             }
         }
@@ -1044,11 +901,13 @@
 
             isRecording = false;
             voiceBtn.classList.remove('active');
-            voiceBtn.innerHTML = '<span class="ptt-icon">🎤</span> HOLD TO TALK';
+            voiceBtn.innerHTML = '<span class="ptt-icon">🎤</span><span class="ptt-label">HOLD TO TALK</span>';
             voiceLevel.style.width = '0%';
             txLed.className = 'led';
             if (isConnected) {
                 setStatus(myRole === 'host' ? 'HOST' : 'JOINED', true, myRole);
+                statusMsg.textContent = myRole === 'host' ? '👑 Hosting ' + room : '🔗 Connected to ' + room;
+                statusMsg.className = 'status-msg active';
             }
         }
 
@@ -1111,9 +970,7 @@
         // ---- Play voice ----
         function playVoice(base64Data) {
             try {
-                if (!base64Data || typeof base64Data !== 'string') {
-                    return;
-                }
+                if (!base64Data || typeof base64Data !== 'string') return;
                 if (!base64Data.startsWith('data:audio/webm')) {
                     if (base64Data.startsWith('data:')) {
                         // It's a data URL but maybe wrong type
@@ -1123,20 +980,28 @@
                 }
 
                 const audio = new Audio();
-                audio.onerror = () => {
-                    appendLog(`⚠️ Audio error`);
-                };
                 audio.src = base64Data;
                 const playPromise = audio.play();
                 if (playPromise !== undefined) {
-                    playPromise.catch(() => {
-                        // Silent fail
-                    });
+                    playPromise.catch(() => {});
                 }
-            } catch (err) {
-                // Silent fail
-            }
+            } catch (err) {}
         }
+
+        // ---- Disconnect ----
+        disconnectBtn.addEventListener('click', function() {
+            if (socket) {
+                socket.emit('leaveChannel');
+                socket.disconnect();
+                socket = null;
+            }
+            setStatus('DISCONNECTED', false);
+            updateUsers([], null);
+            channelDisplay.textContent = 'CH: ---';
+            channelIdDisplay.classList.add('hidden');
+            statusMsg.textContent = '🔌 Left the channel';
+            statusMsg.className = 'status-msg';
+        });
 
         // ---- Mode switching ----
         modeButtons.forEach(btn => {
@@ -1154,15 +1019,15 @@
                 }
 
                 if (isConnected) {
-                    appendLog('⚠️ Leave channel to switch mode');
+                    statusMsg.textContent = '⚠️ Leave channel to switch mode';
+                    statusMsg.className = 'status-msg';
                 }
             });
         });
 
         // ---- Init ----
-        appendLog('🔌 VokiToki ready');
-        appendLog('📱 ID: ' + deviceId);
-        appendLog('💡 HOST to create a channel, JOIN to connect');
+        statusMsg.textContent = '🔌 Press HOST or JOIN to start';
+        statusMsg.className = 'status-msg';
 
         // Connect socket immediately
         connectSocket();
@@ -1170,6 +1035,7 @@
         // ---- Handle page close ----
         window.addEventListener('beforeunload', function() {
             if (socket) {
+                socket.emit('leaveChannel');
                 socket.disconnect();
             }
             if (isRecording) {
